@@ -24,6 +24,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kairo.app.R
+import com.kairo.app.ui.alarms.AlarmsViewModel
+import com.kairo.app.ui.alarms.alarmsViewModelFactory
+import com.kairo.app.util.formatMinuteOfDay
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Checkbox
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import com.kairo.app.data.prefs.UserPrefs
 import com.kairo.app.ui.containerFactory
 import com.kairo.app.ui.theme.KairoTheme
@@ -31,13 +38,21 @@ import com.kairo.app.ui.theme.KairoTheme
 @Composable
 fun OnboardingScreen(
     viewModel: ProfileViewModel = viewModel(factory = containerFactory { ProfileViewModel(it.userPrefsRepository, it.roleRepository) }),
+    alarmsViewModel: AlarmsViewModel = viewModel(factory = alarmsViewModelFactory()),
 ) {
+    val wakeLabel = stringResource(R.string.alarm_wake_label)
     // Navigation away happens reactively once DataStore reports onboardingDone = true.
-    OnboardingContent(onFinish = viewModel::save)
+    OnboardingContent(onFinish = { name, wake, sleep, addWakeAlarm ->
+        // The alarm is created only because the user ticked the box; never by default.
+        if (addWakeAlarm) alarmsViewModel.createWeekdayWakeAlarm(wake, wakeLabel)
+        viewModel.save(name, wake, sleep)
+    })
 }
 
 @Composable
-fun OnboardingContent(onFinish: (name: String, wakeMinute: Int, sleepMinute: Int) -> Unit, modifier: Modifier = Modifier) {
+fun OnboardingContent(onFinish: (name: String, wakeMinute: Int, sleepMinute: Int, addWakeAlarm: Boolean) -> Unit, modifier: Modifier = Modifier) {
+    var addWakeAlarm by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
     var name by rememberSaveable { mutableStateOf("") }
     var wake by rememberSaveable { mutableIntStateOf(UserPrefs.DEFAULT_WAKE_MINUTE) }
     var sleep by rememberSaveable { mutableIntStateOf(UserPrefs.DEFAULT_SLEEP_MINUTE) }
@@ -68,8 +83,12 @@ fun OnboardingContent(onFinish: (name: String, wakeMinute: Int, sleepMinute: Int
             onSleepChange = { sleep = it },
             showNameError = showErrors && name.isBlank(),
         )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(checked = addWakeAlarm, onCheckedChange = { addWakeAlarm = it })
+            Text(stringResource(R.string.onboarding_wake_alarm, formatMinuteOfDay(context, wake)), style = MaterialTheme.typography.bodyMedium)
+        }
         Button(
-            onClick = { if (name.isBlank()) showErrors = true else onFinish(name, wake, sleep) },
+            onClick = { if (name.isBlank()) showErrors = true else onFinish(name, wake, sleep, addWakeAlarm) },
             modifier = Modifier.fillMaxWidth(),
         ) { Text(stringResource(R.string.onboarding_start)) }
     }
@@ -78,5 +97,5 @@ fun OnboardingContent(onFinish: (name: String, wakeMinute: Int, sleepMinute: Int
 @Preview(showBackground = true, backgroundColor = 0xFF07070B)
 @Composable
 private fun OnboardingContentPreview() {
-    KairoTheme { OnboardingContent(onFinish = { _, _, _ -> }) }
+    KairoTheme { OnboardingContent(onFinish = { _, _, _, _ -> }) }
 }

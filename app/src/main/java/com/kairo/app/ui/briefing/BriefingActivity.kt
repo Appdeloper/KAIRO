@@ -67,6 +67,7 @@ class BriefingActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
         )
         super.onCreate(savedInstanceState)
+        stopAlarmIfAsked(intent)
         speech = AndroidSpeechProvider(this)
         speaker = BriefSpeaker(this)
         setContent {
@@ -76,6 +77,7 @@ class BriefingActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        stopAlarmIfAsked(intent)
         // Re-opened from a tile/widget/shortcut while still alive: the plan may have changed.
         viewModel.refreshBrief()
     }
@@ -93,8 +95,20 @@ class BriefingActivity : ComponentActivity() {
         super.onDestroy()
     }
 
+    /** "Dismiss" on the alarm notification opens us directly; we then stop the ringing. */
+    private fun stopAlarmIfAsked(intent: Intent?) {
+        if (intent?.hasExtra(EXTRA_DISMISS_ALARM_ID) == true) {
+            startService(com.kairo.app.alarm.AlarmRingService.dismissIntent(this))
+            intent.removeExtra(EXTRA_DISMISS_ALARM_ID)
+        }
+    }
+
     companion object {
+        private const val EXTRA_DISMISS_ALARM_ID = "dismiss_alarm_id"
+
         fun intent(context: Context): Intent = Intent(context, BriefingActivity::class.java)
+
+        fun dismissAlarmIntent(context: Context, alarmId: Long): Intent = intent(context).putExtra(EXTRA_DISMISS_ALARM_ID, alarmId)
     }
 }
 

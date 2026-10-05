@@ -7,17 +7,18 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [Role::class, FixedBlock::class, Task::class, Note::class, Reminder::class, BlockSkip::class],
-    version = 2,
+    entities = [Role::class, FixedBlock::class, Task::class, Note::class, Reminder::class, BlockSkip::class, Alarm::class],
+    version = 3,
     exportSchema = true,
-    // v2 only adds the block_skips table, which Room can migrate without hand-written SQL.
-    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    // v2 adds block_skips, v3 adds alarms: new tables only, so Room migrates without hand-written SQL.
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
 )
 abstract class KairoDatabase : RoomDatabase() {
     abstract fun roleDao(): RoleDao
     abstract fun fixedBlockDao(): FixedBlockDao
     abstract fun taskDao(): TaskDao
     abstract fun blockSkipDao(): BlockSkipDao
+    abstract fun alarmDao(): AlarmDao
 
     companion object {
         fun build(context: Context): KairoDatabase =

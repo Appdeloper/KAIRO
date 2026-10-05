@@ -13,6 +13,7 @@ import com.kairo.app.ai.CommandParserFacade
 import com.kairo.app.ai.FailReason
 import com.kairo.app.ai.LocalCommandParser
 import com.kairo.app.ai.ParseResult
+import com.kairo.app.data.repository.AlarmRepository
 import com.kairo.app.data.repository.PlanRepository
 import com.kairo.app.data.repository.RoleRepository
 import com.kairo.app.data.repository.TaskRepository
@@ -80,6 +81,7 @@ class TimetableToTodayTest {
             local = LocalCommandParser { PlanRepository(db, prefsFor(date), fixedDate(date)).loadState() },
             settings = { AiSettings() },
         ),
+        AlarmRepository(db.alarmDao(), db.fixedBlockDao(), db.blockSkipDao()),
     )
 
     private fun prefsFor(date: LocalDate) = UserPrefsRepository(PreferenceDataStoreFactory.create { tmp.newFile("q$date.preferences_pb") })

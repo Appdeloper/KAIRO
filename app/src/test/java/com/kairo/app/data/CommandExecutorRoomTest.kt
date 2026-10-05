@@ -61,7 +61,7 @@ class CommandExecutorRoomTest {
             override fun todayFlow() = flowOf(monday)
         }
         val prefs = UserPrefsRepository(PreferenceDataStoreFactory.create { tmp.newFile("prefs.preferences_pb") })
-        repo = PlanRepository(db, prefs, dates) { 42L }
+        repo = PlanRepository(db, prefs, dates, clockMillis = { 42L })
         executor = CommandExecutor(repo)
 
         db.fixedBlockDao().upsert(FixedBlock(title = "DBMS lecture", roleId = collegeId, dayOfWeek = 1, startMinute = 15 * 60, endMinute = 16 * 60))

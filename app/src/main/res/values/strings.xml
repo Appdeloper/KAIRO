@@ -12,6 +12,7 @@
     <string name="nav_today">Today</string>
     <string name="nav_timetable">Timetable</string>
     <string name="nav_tasks">Tasks</string>
+    <string name="nav_alarms">Alarms</string>
     <string name="nav_settings">Settings</string>
 
     <!-- Onboarding / profile -->
@@ -183,4 +184,71 @@
     <string name="settings_tile_added">Tile added</string>
     <string name="settings_tile_already">Tile is already in Quick Settings</string>
     <string name="settings_tile_not_added">Tile not added</string>
+
+    <!-- Alarms -->
+    <string name="channel_alarm">Alarms</string>
+    <string name="channel_alarm_description">Ringing alarms. Keep this on so alarms can show on the lock screen.</string>
+    <string name="channel_alarm_info">Alarm updates</string>
+    <string name="alarm_default_label">Alarm</string>
+    <string name="alarm_ringing_text">Ringing. Open to dismiss or snooze.</string>
+    <string name="alarm_snooze_minutes">Snooze %1$d min</string>
+    <string name="alarm_dismiss">Dismiss</string>
+    <string name="alarm_missed_title">Missed alarm</string>
+    <string name="alarm_missed_text">%1$s rang at %2$s and went quiet after 10 minutes.</string>
+    <string name="alarm_open_kairo">Open KAIRO</string>
+    <string name="alarm_snoozed_until">Snoozed until %1$s</string>
+    <string name="alarm_first_item">First up: %1$s</string>
+    <plurals name="alarm_snooze_left">
+        <item quantity="one">Snooze %1$d min (%2$d left)</item>
+        <item quantity="other">Snooze %1$d min (%2$d left)</item>
+    </plurals>
+    <string name="alarm_no_snoozes">No snoozes left</string>
+    <string name="alarm_slide_to_dismiss">Slide to dismiss</string>
+    <string name="alarm_banner_title">Alarms may not ring reliably</string>
+    <string name="alarm_fix">Fix</string>
+    <string name="alarm_issue_exact">Allow Alarms &amp; reminders so alarms ring on time</string>
+    <string name="alarm_issue_full_screen">Allow full-screen alerts so the alarm shows on the lock screen</string>
+    <string name="alarm_issue_notifications">Allow notifications so the ring screen can appear</string>
+    <string name="alarm_health_exact">Exact alarms allowed</string>
+    <string name="alarm_health_full_screen">Full-screen alarm screen allowed</string>
+    <string name="alarm_health_notifications">Notifications on</string>
+    <string name="alarm_health_battery">Battery optimisation off for KAIRO</string>
+    <string name="alarm_health_volume">Alarm volume above zero</string>
+    <string name="alarm_health_next">Next alarm: %1$s</string>
+    <string name="alarm_health_none">No alarm scheduled</string>
+    <string name="alarm_health_ok">OK</string>
+    <string name="alarm_health_problem">Needs attention</string>
+    <string name="alarm_day_time">%1$s %2$s</string>
+    <string name="alarm_add">Add alarm</string>
+    <string name="alarm_edit">Edit alarm</string>
+    <string name="alarm_wake_label">Wake up</string>
+    <string name="alarm_test_label">Test alarm</string>
+    <string name="alarm_proposal_title">Wake-up alarm</string>
+    <string name="alarm_proposal_text">You usually wake at %1$s. Want a weekday alarm for that?</string>
+    <string name="alarm_proposal_confirm">Add weekday alarm at %1$s</string>
+    <string name="alarm_skip_next">Skip next</string>
+    <string name="alarm_unskip">Unskip next</string>
+    <string name="alarm_next_ring">next %1$s</string>
+    <string name="alarm_off">off</string>
+    <string name="alarm_row_subtitle">%1$s · %2$s</string>
+    <string name="alarm_label">Label</string>
+    <string name="alarm_rings_at">Rings at %1$s</string>
+    <string name="alarm_ringtone">Sound: %1$s</string>
+    <string name="alarm_ringtone_default">Default alarm sound</string>
+    <string name="alarm_vibrate">Vibrate</string>
+    <string name="alarm_open_briefing">Open the morning briefing after dismiss</string>
+    <string name="alarm_ramp">Volume ramp: %1$d s</string>
+    <string name="alarm_snooze_length">Snooze length</string>
+    <string name="alarm_max_snoozes">Max snoozes</string>
+    <string name="alarm_type_wake">Repeating</string>
+    <string name="alarm_type_block">Lecture</string>
+    <string name="alarm_type_once">Once</string>
+    <string name="alarm_no_blocks">Add lectures in Timetable first.</string>
+    <string name="alarm_block_chip">%1$s · %2$s</string>
+    <string name="alarm_before_block">Ring this long before the lecture</string>
+    <string name="settings_alarms">Alarms</string>
+    <string name="settings_test_alarm">Test alarm in 1 minute</string>
+    <string name="settings_test_alarm_hint">Now lock the phone and turn the screen off. It rings at the next full minute.</string>
+    <string name="today_next_alarm">Alarm %1$s · %2$s</string>
+    <string name="onboarding_wake_alarm">Also set a weekday wake-up alarm at %1$s</string>
 </resources>

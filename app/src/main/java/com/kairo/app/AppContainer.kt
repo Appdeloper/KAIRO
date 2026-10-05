@@ -12,6 +12,7 @@ import com.kairo.app.data.local.KairoDatabase
 import com.kairo.app.data.prefs.AiSettingsRepository
 import com.kairo.app.data.prefs.BriefCacheStore
 import com.kairo.app.data.prefs.UserPrefsRepository
+import com.kairo.app.data.repository.AlarmRepository
 import com.kairo.app.data.repository.PlanRepository
 import com.kairo.app.data.repository.RoleRepository
 import com.kairo.app.data.repository.TaskRepository
@@ -33,6 +34,7 @@ class AppContainer(context: Context) {
     val taskRepository by lazy { TaskRepository(database.taskDao()) }
     val userPrefsRepository by lazy { UserPrefsRepository(appContext.userPrefsStore) }
     val dateProvider: DateProvider = SystemDateProvider
+    val alarmRepository by lazy { AlarmRepository(database.alarmDao(), database.fixedBlockDao(), database.blockSkipDao()) }
     val planRepository by lazy { PlanRepository(database, userPrefsRepository, dateProvider) }
 
     /** App-wide so the undo history survives leaving and re-entering a screen. */

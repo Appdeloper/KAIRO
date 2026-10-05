@@ -11,11 +11,15 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import androidx.glance.appwidget.updateAll
+import com.kairo.app.alarm.AlarmNotifications
+import com.kairo.app.alarm.AlarmSync
+import com.kairo.app.alarm.isUserUnlocked
 import com.kairo.app.ui.today.DayTimelineSource
 import com.kairo.app.ui.widget.KairoWidget
 import com.kairo.app.ui.widget.WidgetRefreshWorker
 
 private const val WIDGET_DEBOUNCE_MS = 500L
+private const val ALARM_SYNC_DEBOUNCE_MS = 200L
 
 class KairoApp : Application() {
     lateinit var container: AppContainer
@@ -27,9 +31,25 @@ class KairoApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        AlarmNotifications.createChannels(this)
+        // Direct boot (after a reboot, before first unlock): only alarm code runs, from device-protected
+        // storage. Room and DataStore live in encrypted storage and would crash the process here.
+        if (!isUserUnlocked()) return
         appScope.launch { container.roleRepository.seedDefaultsIfEmpty() }
+        keepAlarmsScheduled()
         appScope.launch { WidgetRefreshWorker.ensureScheduledIfPlaced(this@KairoApp) }
         refreshWidgetOnPlanChanges()
+    }
+
+    /** Any alarm, lecture or lecture-skip change re-syncs AlarmManager, whoever made it. */
+    @OptIn(FlowPreview::class)
+    private fun keepAlarmsScheduled() {
+        appScope.launch {
+            container.alarmRepository.plans()
+                .distinctUntilChanged()
+                .debounce(ALARM_SYNC_DEBOUNCE_MS)
+                .collect { AlarmSync.syncAll(this@KairoApp) }
+        }
     }
 
     /** Any change to today's plan (Apply, Undo, tick, timetable edit) refreshes the home-screen widget. */

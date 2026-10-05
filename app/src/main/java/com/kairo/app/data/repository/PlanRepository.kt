@@ -1,6 +1,12 @@
 package com.kairo.app.data.repository
 
 import androidx.room.withTransaction
+import com.kairo.app.alarm.AlarmPlan
+import com.kairo.app.alarm.AlarmTimes
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import com.kairo.app.data.local.BlockSkip
 import com.kairo.app.data.local.KairoDatabase
 import com.kairo.app.data.local.Task
@@ -20,6 +26,9 @@ class PlanRepository(
     private val prefs: UserPrefsRepository,
     private val dateProvider: DateProvider,
     private val clockMillis: () -> Long = System::currentTimeMillis,
+    private val alarmPlans: suspend () -> List<AlarmPlan> = {
+        AlarmRepository(db.alarmDao(), db.fixedBlockDao(), db.blockSkipDao()).plansOnce()
+    },
 ) : PlanStore {
 
     suspend fun loadState(): PlanState {
@@ -37,9 +46,14 @@ class PlanRepository(
             // Only today onward matters for planning; yesterday is kept so rollover can still see it.
             skippedBlocks = db.blockSkipDao().skipsFromOnce(today.toEpochDay() - 1)
                 .map { BlockSkipKey(it.blockId, it.epochDay) }.toSet(),
-            // Alarms join in the alarm step; until then nothing extra is immovable.
-            alarmsByDate = emptyMap(),
+            // Enabled alarms are immovable for the scheduler, like lectures (rule 4).
+            alarmsByDate = AlarmTimes.minutesByDate(alarmPlans(), alarmClockNow(today), ALARM_WINDOW_DAYS),
         )
+    }
+
+    private fun alarmClockNow(today: LocalDate): ZonedDateTime {
+        val minute = dateProvider.nowMinuteOfDay()
+        return ZonedDateTime.of(today, LocalTime.of(minute / 60, minute % 60), ZoneId.systemDefault())
     }
 
     override suspend fun <T> inTransaction(block: suspend () -> T): T = db.withTransaction { block() }
@@ -52,4 +66,9 @@ class PlanRepository(
     override suspend fun isBlockSkipped(key: BlockSkipKey): Boolean = db.blockSkipDao().exists(key.blockId, key.epochDay)
     override suspend fun addBlockSkip(key: BlockSkipKey) = db.blockSkipDao().insert(BlockSkip(key.blockId, key.epochDay))
     override suspend fun removeBlockSkip(key: BlockSkipKey) = db.blockSkipDao().delete(BlockSkip(key.blockId, key.epochDay))
+
+    private companion object {
+        /** Two weeks covers the scheduler's search (a week ahead, or up to a near deadline). */
+        const val ALARM_WINDOW_DAYS = 14
+    }
 }

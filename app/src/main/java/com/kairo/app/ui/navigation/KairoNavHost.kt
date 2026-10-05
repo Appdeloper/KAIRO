@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.CalendarViewWeek
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Settings
@@ -25,11 +26,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.kairo.app.R
+import com.kairo.app.ui.alarms.AlarmsScreen
 import com.kairo.app.ui.containerFactory
 import com.kairo.app.ui.onboarding.OnboardingScreen
 import com.kairo.app.ui.onboarding.ProfileViewModel
@@ -42,6 +45,7 @@ enum class TopLevelDestination(val route: String, @StringRes val label: Int, val
     TODAY("today", R.string.nav_today, Icons.Outlined.WbSunny),
     TIMETABLE("timetable", R.string.nav_timetable, Icons.Outlined.CalendarViewWeek),
     TASKS("tasks", R.string.nav_tasks, Icons.Outlined.Checklist),
+    ALARMS("alarms", R.string.nav_alarms, Icons.Outlined.Alarm),
     SETTINGS("settings", R.string.nav_settings, Icons.Outlined.Settings),
 }
 
@@ -76,14 +80,7 @@ private fun MainShell() {
                 TopLevelDestination.entries.forEach { dest ->
                     NavigationBarItem(
                         selected = currentDestination?.hierarchy?.any { it.route == dest.route } == true,
-                        onClick = {
-                            navController.navigate(dest.route) {
-                                // Standard bottom-bar behavior: one copy per tab, state kept when switching.
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
+                        onClick = { navController.navigateToTab(dest) },
                         icon = { Icon(dest.icon, contentDescription = null) },
                         label = { Text(stringResource(dest.label)) },
                     )
@@ -97,10 +94,20 @@ private fun MainShell() {
             // Consuming tells each screen's own Scaffold these insets are handled, so it doesn't pad them twice.
             modifier = Modifier.padding(padding).consumeWindowInsets(padding),
         ) {
-            composable(TopLevelDestination.TODAY.route) { TodayScreen() }
+            composable(TopLevelDestination.TODAY.route) { TodayScreen(onOpenAlarms = { navController.navigateToTab(TopLevelDestination.ALARMS) }) }
             composable(TopLevelDestination.TIMETABLE.route) { TimetableScreen() }
             composable(TopLevelDestination.TASKS.route) { TasksScreen() }
+            composable(TopLevelDestination.ALARMS.route) { AlarmsScreen() }
             composable(TopLevelDestination.SETTINGS.route) { SettingsScreen() }
         }
+    }
+}
+
+/** Standard bottom-bar behavior: one copy per tab, state kept when switching. */
+private fun NavHostController.navigateToTab(dest: TopLevelDestination) {
+    navigate(dest.route) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
 }

@@ -106,6 +106,9 @@ interface BlockSkipDao {
     @Query("SELECT * FROM block_skips ORDER BY blockId, epochDay")
     suspend fun allOnce(): List<BlockSkip>
 
+    @Query("SELECT * FROM block_skips ORDER BY blockId, epochDay")
+    fun all(): Flow<List<BlockSkip>>
+
     @Query("SELECT COUNT(*) > 0 FROM block_skips WHERE blockId = :blockId AND epochDay = :epochDay")
     suspend fun exists(blockId: Long, epochDay: Long): Boolean
 
@@ -114,4 +117,25 @@ interface BlockSkipDao {
 
     @Delete
     suspend fun delete(skip: BlockSkip)
+}
+
+@Dao
+interface AlarmDao {
+    @Query("SELECT * FROM alarms ORDER BY hour, minute, id")
+    fun allAlarms(): Flow<List<Alarm>>
+
+    @Query("SELECT * FROM alarms ORDER BY id")
+    suspend fun allOnce(): List<Alarm>
+
+    @Query("SELECT * FROM alarms WHERE id = :id")
+    suspend fun findById(id: Long): Alarm?
+
+    @Insert
+    suspend fun insert(alarm: Alarm): Long
+
+    @Update
+    suspend fun update(alarm: Alarm)
+
+    @Delete
+    suspend fun delete(alarm: Alarm)
 }

@@ -107,3 +107,41 @@ data class BlockSkip(
     val blockId: Long,
     val epochDay: Long,
 )
+
+enum class AlarmType { WAKE, BLOCK, ONE_SHOT }
+
+/**
+ * A user alarm. Times are wall-clock (hour/minute in the device's current zone), so a trip across
+ * time zones keeps "7:00 wake-up" at 7:00 local. daysOfWeekMask: bit 0 = Monday … bit 6 = Sunday,
+ * 0 = one-shot (rings once at the next hour:minute, then disables itself on dismiss).
+ */
+@Entity(
+    tableName = "alarms",
+    foreignKeys = [
+        ForeignKey(entity = FixedBlock::class, parentColumns = ["id"], childColumns = ["linkedBlockId"], onDelete = ForeignKey.SET_NULL),
+    ],
+    indices = [Index("linkedBlockId")],
+)
+data class Alarm(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val label: String = "",
+    val hour: Int,
+    val minute: Int,
+    val daysOfWeekMask: Int = 0,
+    val enabled: Boolean = true,
+    val type: AlarmType = AlarmType.WAKE,
+    val ringtoneUri: String? = null,
+    val vibrate: Boolean = true,
+    val rampUpSeconds: Int = 20,
+    val snoozeMinutes: Int = 5,
+    val maxSnoozes: Int = 3,
+    val linkedBlockId: Long? = null,
+    val offsetMinutesBeforeBlock: Int? = null,
+    val skipNextOnce: Boolean = false,
+    /** Local date (epoch day) of the occurrence being skipped; a date survives time-zone changes. */
+    val skipDateEpochDay: Long? = null,
+    val openBriefingOnDismiss: Boolean = true,
+    /** Runtime state, persisted so a reboot mid-snooze still rings. */
+    val snoozeCount: Int = 0,
+    val snoozedUntilMillis: Long? = null,
+)

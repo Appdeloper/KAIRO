@@ -1,7 +1,6 @@
 package com.kairo.app.service
 
 import android.annotation.SuppressLint
-import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Build
@@ -36,24 +35,11 @@ class BriefTileService : TileService() {
         val intent = BriefingActivity.intent(this).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // API 34+: only the PendingIntent overload is allowed.
-            startActivityAndCollapse(PendingIntent.getActivity(this, REQUEST_CODE, intent, FLAGS, creatorOptions()))
+            startActivityAndCollapse(PendingIntent.getActivity(this, REQUEST_CODE, intent, FLAGS))
         } else {
             @Suppress("DEPRECATION")
             startActivityAndCollapse(intent)
         }
-    }
-
-    /**
-     * Apps targeting API 35+ must opt in, as the PendingIntent's creator, to letting it start an
-     * activity. SystemUI sends it in response to the user's tap.
-     */
-    private fun creatorOptions() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-        ActivityOptions.makeBasic().apply {
-            @Suppress("DEPRECATION")
-            pendingIntentCreatorBackgroundActivityStartMode = ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-        }.toBundle()
-    } else {
-        null
     }
 
     private companion object {

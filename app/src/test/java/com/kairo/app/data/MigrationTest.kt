@@ -28,7 +28,32 @@ class MigrationTest {
         db.query("SELECT COUNT(*) FROM block_skips").use { it.moveToFirst(); assertEquals(1, it.getInt(0)) }
     }
 
+    @Test
+    fun v2ToV3_keepsDataAndAddsAlarms() {
+        helper.createDatabase(DB_NAME_V2, 2).apply {
+            execSQL("INSERT INTO roles (id, name, colorHex, dailyBudgetMinutes) VALUES (1, 'College', '#00E5FF', 360)")
+            execSQL("INSERT INTO fixed_blocks (id, title, roleId, dayOfWeek, startMinute, endMinute, location, source) VALUES (1, 'DBMS', 1, 1, 540, 600, NULL, 'MANUAL')")
+            execSQL("INSERT INTO block_skips (blockId, epochDay) VALUES (1, 20366)")
+            close()
+        }
+        val db = helper.runMigrationsAndValidate(DB_NAME_V2, 3, true)
+        db.execSQL(
+            "INSERT INTO alarms (id, label, hour, minute, daysOfWeekMask, enabled, type, vibrate, rampUpSeconds, snoozeMinutes, maxSnoozes, " +
+                "linkedBlockId, skipNextOnce, openBriefingOnDismiss, snoozeCount) VALUES (1, 'Wake', 7, 0, 31, 1, 'WAKE', 1, 20, 5, 3, 1, 0, 1, 0)",
+        )
+        db.query("SELECT COUNT(*) FROM block_skips").use { it.moveToFirst(); assertEquals(1, it.getInt(0)) }
+        db.query("SELECT label FROM alarms").use { it.moveToFirst(); assertEquals("Wake", it.getString(0)) }
+    }
+
+    @Test
+    fun v1ToV3_inOneUpgrade() {
+        helper.createDatabase(DB_NAME_V1_TO_V3, 1).close()
+        helper.runMigrationsAndValidate(DB_NAME_V1_TO_V3, 3, true).close()
+    }
+
     private companion object {
+        const val DB_NAME_V2 = "migration-test-v2"
+        const val DB_NAME_V1_TO_V3 = "migration-test-v1-v3"
         const val DB_NAME = "migration-test"
     }
 }

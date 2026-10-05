@@ -165,6 +165,20 @@ class SchedulerTest {
     }
 
     @Test
+    fun alarm_earliestFitNeverLandsOnAnAlarm() {
+        // Free from 8:00, but a 9:00 alarm sits in the morning: a 60-min task can't straddle it.
+        val withAlarm = state(alarms = mapOf(MONDAY to listOf(h(9))))
+        val placed = (Scheduler.placeTask(task(0, "Report", 60), MONDAY, withAlarm).mutations.single() as Change.Added).task
+        val start = placed.scheduledStartMinute!!
+        assertFalse("task must not cover the 9:00 alarm", h(9) in start until start + 60)
+        // The alarm is a 1-minute busy slot plus the 10-minute buffer: free from 9:11, rounded to 9:15.
+        assertEquals(h(9, 15), start)
+        // Alarms on other days don't block Monday.
+        val tuesdayAlarm = state(alarms = mapOf(TUESDAY to listOf(h(8, 30))))
+        assertEquals(h(8), (Scheduler.placeTask(task(0, "Report", 60), MONDAY, tuesdayAlarm).mutations.single() as Change.Added).task.scheduledStartMinute)
+    }
+
+    @Test
     fun explicitTime_overlappingTaskAndOutsideHoursAreWarnings() {
         val other = task(1, "Call", 60, MONDAY, h(18))
         val diff = Scheduler.placeTaskAt(task(0, "Gym", 60), MONDAY, h(18, 30), state(tasks = listOf(other)))

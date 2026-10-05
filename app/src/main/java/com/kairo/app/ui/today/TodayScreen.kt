@@ -64,6 +64,13 @@ import com.kairo.app.data.local.Task
 import com.kairo.app.domain.DayPart
 import com.kairo.app.domain.TimelineEntry
 import com.kairo.app.ui.PreviewData
+import com.kairo.app.ui.alarms.AlarmPermissionBanner
+import com.kairo.app.ui.alarms.formatInstant
+import com.kairo.app.ui.alarms.rememberAlarmHealth
+import com.kairo.app.ui.alarms.rememberHealthFixer
+import com.kairo.app.ui.theme.KairoColors
+import androidx.compose.material.icons.outlined.Alarm
+import androidx.compose.material3.AssistChip
 import com.kairo.app.ui.briefing.BriefingActivity
 import com.kairo.app.ui.command.CommandFeedbackEffect
 import com.kairo.app.ui.components.RoleDot
@@ -77,17 +84,21 @@ import java.time.format.FormatStyle
 
 @Composable
 fun TodayScreen(
+    onOpenAlarms: () -> Unit = {},
     viewModel: TodayViewModel = viewModel(
         factory = containerFactory {
             TodayViewModel(
                 it.taskRepository, it.timetableRepository, it.roleRepository, it.userPrefsRepository,
-                it.dateProvider, it.planRepository, it.commandExecutor, it.commandParser,
+                it.dateProvider, it.planRepository, it.commandExecutor, it.commandParser, it.alarmRepository,
             )
         },
     ),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val pendingDiff by viewModel.pendingDiff.collectAsStateWithLifecycle()
+    val alarms by viewModel.alarms.collectAsStateWithLifecycle()
+    val alarmHealth = rememberAlarmHealth(alarms.next?.second)
+    val fixAlarmIssue = rememberHealthFixer()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     CommandFeedbackEffect(viewModel.events, snackbarHostState, onUndo = viewModel::undo)
@@ -101,6 +112,13 @@ fun TodayScreen(
             state = state,
             onTaskClick = viewModel::toggleDone,
             onBriefMe = { context.startActivity(BriefingActivity.intent(context)) },
+            alarmSlot = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Only nag about alarm permissions once the user actually relies on alarms.
+                    if (alarms.anyEnabled) AlarmPermissionBanner(alarmHealth, fixAlarmIssue)
+                    alarms.next?.let { (plan, at) -> NextAlarmChip(plan.label, at, onOpenAlarms) }
+                }
+            },
             modifier = Modifier.padding(padding),
         )
     }
@@ -144,13 +162,20 @@ fun CommandBar(onSubmit: (String) -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TodayContent(state: TodayUiState, onTaskClick: (Task) -> Unit, modifier: Modifier = Modifier, onBriefMe: () -> Unit = {}) {
+fun TodayContent(
+    state: TodayUiState,
+    onTaskClick: (Task) -> Unit,
+    modifier: Modifier = Modifier,
+    onBriefMe: () -> Unit = {},
+    alarmSlot: @Composable () -> Unit = {},
+) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { Header(state.firstName, state.dayPart, state.date, onBriefMe) }
+        item { alarmSlot() }
         item { ProgressCard(state) }
         if (state.entries.isEmpty()) {
             item {
@@ -318,4 +343,21 @@ private fun TodayContentEmptyPreview() {
     KairoTheme {
         TodayContent(state = TodayUiState(firstName = "Aarav"), onTaskClick = {})
     }
+}
+
+@Composable
+fun NextAlarmChip(label: String, at: java.time.Instant, onClick: () -> Unit) {
+    AssistChip(
+        onClick = onClick,
+        leadingIcon = { Icon(Icons.Outlined.Alarm, contentDescription = null, tint = KairoColors.NeonCyan) },
+        label = {
+            Text(stringResource(R.string.today_next_alarm, formatInstant(at), label.ifBlank { stringResource(R.string.alarm_default_label) }))
+        },
+    )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF07070B)
+@Composable
+private fun NextAlarmChipPreview() {
+    KairoTheme { NextAlarmChip("Wake up", java.time.Instant.parse("2026-10-06T01:30:00Z"), {}) }
 }

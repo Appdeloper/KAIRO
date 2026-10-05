@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Only for the user's own Cloudflare Worker (cloud parsing). Mic, alarms and notifications come later. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Requested at runtime only inside BriefingActivity, never from a service (rule 6). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Alarms (see docs/ALARM_TEST_CHECKLIST.md and the step 1.5 notes for the policy reasoning).
+         USE_EXACT_ALARM (API 33+) is granted at install for apps whose core feature is alarms and
+         can't be revoked; SCHEDULE_EXACT_ALARM covers API 31-32. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- Android 11+ package visibility: let us find the device's speech recogniser and TTS engine. -->
     <queries>
@@ -48,6 +62,45 @@
             android:taskAffinity="com.kairo.app.briefing"
             android:theme="@style/Theme.Kairo.Briefing"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Alarm components are directBootAware so alarms ring after a reboot before the first unlock. -->
+        <activity
+            android:name=".ui.alarms.AlarmRingActivity"
+            android:directBootAware="true"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:taskAffinity="com.kairo.app.alarm"
+            android:theme="@style/Theme.Kairo"
+            android:turnScreenOn="true"
+            tools:targetApi="27" />
+
+        <service
+            android:name=".alarm.AlarmRingService"
+            android:directBootAware="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <receiver
+            android:name=".alarm.AlarmReceiver"
+            android:directBootAware="true"
+            android:exported="false" />
+
+        <!-- All handled actions are protected system broadcasts, so exporting can't be abused. -->
+        <receiver
+            android:name=".alarm.AlarmRescheduleReceiver"
+            android:directBootAware="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
 
         <service
             android:name=".service.BriefTileService"

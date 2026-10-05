@@ -19,6 +19,13 @@ import com.kairo.app.domain.plan.PlanDiff
 import com.kairo.app.ui.command.CommandController
 import com.kairo.app.ui.command.CommandEvent
 import com.kairo.app.util.DateProvider
+import com.kairo.app.alarm.AlarmPlan
+import com.kairo.app.alarm.AlarmTimes
+import com.kairo.app.data.repository.AlarmRepository
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import java.time.Instant
+import java.time.ZonedDateTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +33,15 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+
+data class TodayAlarms(val next: Pair<AlarmPlan, Instant>? = null, val anyEnabled: Boolean = false)
+
+private val minuteTicker = flow {
+    while (true) {
+        emit(Unit)
+        delay(60_000)
+    }
+}
 
 data class TodayUiState(
     val firstName: String = "",
@@ -44,6 +60,7 @@ class TodayViewModel(
     private val planRepository: PlanRepository,
     private val executor: CommandExecutor,
     private val parser: CommandParserFacade,
+    alarmRepository: AlarmRepository,
 ) : ViewModel() {
 
     private val timeline = DayTimelineSource(taskRepository, timetableRepository, roleRepository, dateProvider)
@@ -57,6 +74,11 @@ class TodayViewModel(
             progress = DayProgress.of(day.tasks),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TodayUiState())
+
+    /** Soonest alarm (refreshed each minute) and whether any alarm is on, for the chip and banner. */
+    val alarms: StateFlow<TodayAlarms> = combine(alarmRepository.plans(), minuteTicker) { plans, _ ->
+        TodayAlarms(next = AlarmTimes.nextAcross(plans, ZonedDateTime.now()), anyEnabled = plans.any { it.enabled })
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TodayAlarms())
 
     private val commands = CommandController(viewModelScope, parser, executor, planRepository)
     val pendingDiff: StateFlow<PlanDiff?> = commands.pendingDiff

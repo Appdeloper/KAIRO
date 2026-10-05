@@ -30,6 +30,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kairo.app.R
 import com.kairo.app.ai.AiSettings
+import com.kairo.app.ui.alarms.AlarmsViewModel
+import com.kairo.app.ui.alarms.alarmsViewModelFactory
+import com.kairo.app.ui.alarms.rememberAlarmHealth
+import com.kairo.app.ui.alarms.rememberHealthFixer
 import com.kairo.app.data.local.Role
 import com.kairo.app.data.prefs.UserPrefs
 import com.kairo.app.ui.PreviewData
@@ -43,7 +47,12 @@ import com.kairo.app.ui.theme.KairoTheme
 fun SettingsScreen(
     viewModel: ProfileViewModel = viewModel(factory = containerFactory { ProfileViewModel(it.userPrefsRepository, it.roleRepository) }),
     aiViewModel: AiSettingsViewModel = viewModel(factory = containerFactory { AiSettingsViewModel(it.aiSettingsRepository) }),
+    alarmsViewModel: AlarmsViewModel = viewModel(factory = alarmsViewModelFactory()),
 ) {
+    val alarmState by alarmsViewModel.state.collectAsStateWithLifecycle()
+    val alarmHealth = rememberAlarmHealth(alarmState.next?.second)
+    val fixAlarm = rememberHealthFixer()
+    val testLabel = stringResource(R.string.alarm_test_label)
     val prefs by viewModel.prefs.collectAsStateWithLifecycle()
     val roles by viewModel.roles.collectAsStateWithLifecycle()
     val ai by aiViewModel.settings.collectAsStateWithLifecycle()
@@ -51,7 +60,14 @@ fun SettingsScreen(
     val loadedPrefs = prefs
     val loadedAi = ai
     if (loadedPrefs != null && loadedAi != null) {
-        SettingsContent(prefs = loadedPrefs, roles = roles, ai = loadedAi, onSave = viewModel::save, onSaveAi = aiViewModel::save)
+        SettingsContent(
+            prefs = loadedPrefs,
+            roles = roles,
+            ai = loadedAi,
+            onSave = viewModel::save,
+            onSaveAi = aiViewModel::save,
+            alarmSection = { AlarmSettingsSection(alarmHealth, fixAlarm, onTestAlarm = { alarmsViewModel.scheduleTestAlarm(testLabel) }) },
+        )
     }
 }
 
@@ -63,6 +79,7 @@ fun SettingsContent(
     onSave: (name: String, wakeMinute: Int, sleepMinute: Int) -> Unit,
     onSaveAi: (AiSettings) -> Unit,
     modifier: Modifier = Modifier,
+    alarmSection: @Composable () -> Unit = {},
 ) {
     var name by rememberSaveable(prefs) { mutableStateOf(prefs.firstName) }
     var wake by rememberSaveable(prefs) { mutableIntStateOf(prefs.wakeMinute) }
@@ -90,6 +107,7 @@ fun SettingsContent(
             Text(stringResource(if (dirty) R.string.action_save else R.string.settings_saved))
         }
 
+        alarmSection()
         AiSettingsSection(saved = ai, onSave = onSaveAi)
         QuickAccessSection()
 
