@@ -7,6 +7,10 @@ import com.kairo.app.data.local.TaskStatus
 import com.kairo.app.domain.DayPart
 import com.kairo.app.domain.DayProgress
 import com.kairo.app.domain.TimelineBuilder
+import com.kairo.app.domain.plan.Agenda
+import com.kairo.app.domain.plan.Change
+import com.kairo.app.domain.plan.PlanDiff
+import com.kairo.app.domain.plan.Reason
 import com.kairo.app.ui.tasks.TasksUiState
 import com.kairo.app.ui.timetable.TimetableUiState
 import com.kairo.app.ui.today.TodayUiState
@@ -14,7 +18,7 @@ import java.time.LocalDate
 
 /** Fixed sample data for @Preview only; never used at runtime. */
 object PreviewData {
-    private val today = LocalDate.of(2026, 10, 5)
+    val today: LocalDate = LocalDate.of(2026, 10, 5)
 
     val roles = listOf(
         Role(1, "College", "#00E5FF", 360),
@@ -60,4 +64,17 @@ object PreviewData {
         ),
         roles = roles,
     )
+
+    val sampleDiff = PlanDiff(
+        listOf(
+            Change.Added(
+                Task(title = "Gym", roleId = 1, durationMinutes = 60, status = TaskStatus.SCHEDULED,
+                    scheduledEpochDay = today.toEpochDay(), scheduledStartMinute = 13 * 60 + 10, createdAt = 0),
+            ),
+            Change.Warning(Reason.ShiftedAroundFixed("Gym", 12 * 60, 13 * 60 + 10, "OS lab")),
+            Change.Warning(Reason.OverBudget("College", 420, 360)),
+        ),
+    )
+
+    val sampleAgenda = PlanDiff(agenda = Agenda(today, todayState.entries, nextOnly = false))
 }

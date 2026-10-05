@@ -11,7 +11,7 @@ sealed interface TimelineEntry {
     val title: String
     val role: Role?
 
-    data class Block(val block: FixedBlock, override val role: Role?) : TimelineEntry {
+    data class Block(val block: FixedBlock, override val role: Role?, val skipped: Boolean = false) : TimelineEntry {
         override val startMinute get() = block.startMinute
         override val endMinute get() = block.endMinute
         override val title get() = block.title
@@ -30,10 +30,16 @@ object TimelineBuilder {
      * Merges the day's lectures and placed tasks into one list ordered by start time.
      * Dropped tasks are hidden; tasks without a start time sink to the bottom as "anytime".
      * On a tie, fixed blocks come first because they can't move and anchor the day visually.
+     * Skipped blocks stay visible (marked) so the user can see what they chose to drop today.
      */
-    fun build(blocks: List<FixedBlock>, tasks: List<Task>, roles: List<Role>): List<TimelineEntry> {
+    fun build(
+        blocks: List<FixedBlock>,
+        tasks: List<Task>,
+        roles: List<Role>,
+        skippedBlockIds: Set<Long> = emptySet(),
+    ): List<TimelineEntry> {
         val rolesById = roles.associateBy { it.id }
-        val entries = blocks.map { TimelineEntry.Block(it, rolesById[it.roleId]) } +
+        val entries = blocks.map { TimelineEntry.Block(it, rolesById[it.roleId], skipped = it.id in skippedBlockIds) } +
             tasks.filter { it.status != TaskStatus.DROPPED }.map { TimelineEntry.TaskEntry(it, rolesById[it.roleId]) }
         return entries.sortedWith(
             compareBy<TimelineEntry> { it.startMinute ?: Int.MAX_VALUE }

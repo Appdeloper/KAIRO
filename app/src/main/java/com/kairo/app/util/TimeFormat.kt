@@ -6,8 +6,6 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-const val MINUTES_PER_DAY = 24 * 60
-
 fun minuteToLocalTime(minuteOfDay: Int): LocalTime =
     LocalTime.of((minuteOfDay / 60) % 24, minuteOfDay % 60)
 

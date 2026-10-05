@@ -34,6 +34,12 @@ android {
         compose = true
     }
 
+    sourceSets {
+        // Robolectric only sees the app variant's merged assets, so the Room migration test can find
+        // the exported schemas only if debug builds carry them. Release builds never include them.
+        getByName("debug").assets.directories.add("$projectDir/schemas")
+    }
+
     testOptions {
         // Robolectric needs merged resources and the manifest for Room/DataStore tests.
         unitTests.isIncludeAndroidResources = true

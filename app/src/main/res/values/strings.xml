@@ -73,4 +73,52 @@
     <string name="settings_roles">Roles</string>
     <string name="settings_saved">Saved</string>
     <string name="settings_role_budget">%1$d min / day</string>
+
+    <!-- Today: skipped blocks -->
+    <string name="timeline_skipped">Skipped today</string>
+
+    <!-- Command box (temporary, until voice) -->
+    <string name="command_hint">Try: gym 6 baje · skip gym · aaj kya hai</string>
+    <string name="command_send">Send</string>
+    <string name="msg_not_understood">Didn\'t get that. Try “add X at 6pm” or “aaj kya hai”.</string>
+    <string name="msg_applied">Plan updated</string>
+    <string name="msg_undo">Undo</string>
+    <string name="msg_undone">Undone</string>
+    <string name="msg_stale">Your plan changed in the meantime. Nothing was applied, try again.</string>
+    <string name="msg_undo_failed">Can\'t undo: that item changed since.</string>
+
+    <!-- PlanDiff preview -->
+    <string name="plan_title_preview">Here\'s the change</string>
+    <string name="plan_apply">Apply</string>
+    <string name="plan_close">Close</string>
+    <string name="date_today">today</string>
+    <string name="date_tomorrow">tomorrow</string>
+    <string name="day_and_time">%1$s, %2$s</string>
+    <string name="agenda_item">%1$s · %2$s</string>
+    <string name="agenda_empty">Nothing planned.</string>
+    <string name="agenda_next_empty">Nothing else on today.</string>
+    <string name="change_added">Add “%1$s” · %2$s</string>
+    <string name="change_scheduled">Schedule “%1$s” · %2$s</string>
+    <string name="change_moved">Move “%1$s” from %2$s to %3$s</string>
+    <string name="change_unscheduled">Take “%1$s” off %2$s (back to Tasks)</string>
+    <string name="change_completed">Mark “%1$s” done</string>
+    <string name="change_block_skipped">Skip “%1$s” %2$s (only this day)</string>
+    <string name="reason_not_found">Couldn\'t find “%1$s” on your plan</string>
+    <string name="reason_ambiguous">“%1$s” could be: %2$s. Use the full name.</string>
+    <string name="reason_fixed">“%1$s” is fixed and can\'t be moved or completed</string>
+    <string name="reason_no_slot">No free slot for “%1$s” %2$s</string>
+    <string name="reason_no_slot_deadline">No free slot for “%1$s” before its deadline (%2$s)</string>
+    <string name="reason_deadline_passed">“%1$s” is due %2$s, before the day you picked</string>
+    <string name="reason_date_past">%1$s is in the past</string>
+    <string name="reason_time_past">%1$s has already passed today</string>
+    <string name="reason_over_budget">%1$s would have %2$d min planned that day, over its %3$d min budget</string>
+    <string name="reason_shifted_block">“%1$s” moved from %2$s to %3$s to stay clear of “%4$s”</string>
+    <string name="reason_shifted_alarm">“%1$s” moved from %2$s to %3$s to stay clear of an alarm</string>
+    <string name="reason_overlaps">“%1$s” overlaps “%2$s”</string>
+    <string name="reason_outside_hours">“%1$s” is outside your waking hours</string>
+    <string name="reason_later_day">No room that day, so “%1$s” goes on %2$s</string>
+    <string name="reason_already_done">“%1$s” is already done</string>
+    <string name="reason_already_skipped">“%1$s” is already skipped that day</string>
+    <string name="reason_nothing_rollover">Nothing left over from %1$s</string>
+    <string name="reason_no_roles">No roles set up yet</string>
 </resources>

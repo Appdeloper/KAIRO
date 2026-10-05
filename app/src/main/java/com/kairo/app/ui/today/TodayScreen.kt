@@ -13,13 +13,17 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.Lock
@@ -27,10 +31,22 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,6 +54,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -61,12 +78,99 @@ import java.time.format.FormatStyle
 fun TodayScreen(
     viewModel: TodayViewModel = viewModel(
         factory = containerFactory {
-            TodayViewModel(it.taskRepository, it.timetableRepository, it.roleRepository, it.userPrefsRepository, it.dateProvider)
+            TodayViewModel(
+                it.taskRepository, it.timetableRepository, it.roleRepository, it.userPrefsRepository,
+                it.dateProvider, it.planRepository, it.commandExecutor,
+            )
         },
     ),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    TodayContent(state = state, onTaskClick = viewModel::toggleDone)
+    val pendingDiff by viewModel.pendingDiff.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val messages = CommandMessages.resolve()
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is CommandEvent.Applied -> {
+                    val result = snackbarHostState.showSnackbar(messages.applied, actionLabel = messages.undo, duration = SnackbarDuration.Long)
+                    if (result == SnackbarResult.ActionPerformed) viewModel.undo(event.applied)
+                }
+                CommandEvent.NotUnderstood -> snackbarHostState.showSnackbar(messages.notUnderstood)
+                CommandEvent.Stale -> snackbarHostState.showSnackbar(messages.stale)
+                CommandEvent.Undone -> snackbarHostState.showSnackbar(messages.undone)
+                CommandEvent.UndoFailed -> snackbarHostState.showSnackbar(messages.undoFailed)
+            }
+        }
+    }
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = { CommandBar(onSubmit = viewModel::submitCommand) },
+    ) { padding ->
+        TodayContent(state = state, onTaskClick = viewModel::toggleDone, modifier = Modifier.padding(padding))
+    }
+
+    pendingDiff?.let { diff ->
+        PlanDiffSheet(diff = diff, today = state.date, onApply = viewModel::applyPending, onCancel = viewModel::dismissPending)
+    }
+}
+
+/** Snackbar texts resolved up front, because showSnackbar runs outside composition. */
+private data class CommandMessages(
+    val applied: String,
+    val undo: String,
+    val notUnderstood: String,
+    val stale: String,
+    val undone: String,
+    val undoFailed: String,
+) {
+    companion object {
+        @Composable
+        fun resolve() = CommandMessages(
+            applied = stringResource(R.string.msg_applied),
+            undo = stringResource(R.string.msg_undo),
+            notUnderstood = stringResource(R.string.msg_not_understood),
+            stale = stringResource(R.string.msg_stale),
+            undone = stringResource(R.string.msg_undone),
+            undoFailed = stringResource(R.string.msg_undo_failed),
+        )
+    }
+}
+
+/** Temporary typed input for testing the parser and planner until voice arrives. */
+@Composable
+fun CommandBar(onSubmit: (String) -> Unit, modifier: Modifier = Modifier) {
+    var text by rememberSaveable { mutableStateOf("") }
+    val send = {
+        if (text.isNotBlank()) {
+            onSubmit(text)
+            text = ""
+        }
+    }
+    Row(
+        modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .imePadding()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedTextField(
+            value = text,
+            onValueChange = { text = it },
+            placeholder = { Text(stringResource(R.string.command_hint)) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+            keyboardActions = KeyboardActions(onSend = { send() }),
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(onClick = send, enabled = text.isNotBlank()) {
+            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = stringResource(R.string.command_send))
+        }
+    }
 }
 
 @Composable
@@ -160,7 +264,9 @@ private fun TimelineRow(entry: TimelineEntry, onTaskClick: (Task) -> Unit) {
         stringResource(R.string.today_anytime)
     }
     val taskEntry = entry as? TimelineEntry.TaskEntry
+    val isSkipped = (entry as? TimelineEntry.Block)?.skipped == true
     val isDone = taskEntry?.isDone == true
+    val struck = isDone || isSkipped
 
     Card(
         modifier = Modifier
@@ -187,13 +293,17 @@ private fun TimelineRow(entry: TimelineEntry, onTaskClick: (Task) -> Unit) {
                     Text(
                         entry.title,
                         style = MaterialTheme.typography.titleMedium,
-                        textDecoration = if (isDone) TextDecoration.LineThrough else null,
-                        color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                        textDecoration = if (struck) TextDecoration.LineThrough else null,
+                        color = if (struck) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RoleDot(entry.role, size = 8.dp)
                         Spacer(Modifier.width(6.dp))
-                        val subtitle = listOfNotNull(entry.role?.name, (entry as? TimelineEntry.Block)?.block?.location)
+                        val subtitle = listOfNotNull(
+                            entry.role?.name,
+                            (entry as? TimelineEntry.Block)?.block?.location,
+                            if (isSkipped) stringResource(R.string.timeline_skipped) else null,
+                        )
                         Text(
                             subtitle.joinToString(stringResource(R.string.list_separator)),
                             style = MaterialTheme.typography.bodySmall,
@@ -221,6 +331,12 @@ private fun TodayContentPreview() {
     KairoTheme {
         TodayContent(state = PreviewData.todayState, onTaskClick = {})
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF0F0F16)
+@Composable
+private fun CommandBarPreview() {
+    KairoTheme { CommandBar(onSubmit = {}) }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFF07070B)

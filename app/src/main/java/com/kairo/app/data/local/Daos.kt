@@ -37,6 +37,9 @@ interface FixedBlockDao {
     @Query("SELECT * FROM fixed_blocks ORDER BY dayOfWeek, startMinute")
     fun allBlocks(): Flow<List<FixedBlock>>
 
+    @Query("SELECT * FROM fixed_blocks")
+    suspend fun allBlocksOnce(): List<FixedBlock>
+
     @Upsert
     suspend fun upsert(block: FixedBlock): Long
 
@@ -69,12 +72,46 @@ interface TaskDao {
     )
     fun unscheduledOpenTasks(): Flow<List<Task>>
 
+    /** Snapshot for planning. Fine for one person's data; revisit if task history grows large. */
+    @Query("SELECT * FROM tasks WHERE status != 'DROPPED'")
+    suspend fun allLiveTasksOnce(): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE id = :id")
+    suspend fun findById(id: Long): Task?
+
+    @Query("SELECT * FROM tasks ORDER BY id")
+    suspend fun allTasksOnce(): List<Task>
+
     @Insert
     suspend fun insert(task: Task): Long
+
+    @Query("DELETE FROM tasks WHERE id = :id")
+    suspend fun deleteById(id: Long)
 
     @Update
     suspend fun update(task: Task)
 
     @Query("UPDATE tasks SET status = :status WHERE id = :taskId")
     suspend fun setStatus(taskId: Long, status: TaskStatus)
+}
+
+@Dao
+interface BlockSkipDao {
+    @Query("SELECT blockId FROM block_skips WHERE epochDay = :epochDay")
+    fun skippedBlockIdsOn(epochDay: Long): Flow<List<Long>>
+
+    @Query("SELECT * FROM block_skips WHERE epochDay >= :fromEpochDay")
+    suspend fun skipsFromOnce(fromEpochDay: Long): List<BlockSkip>
+
+    @Query("SELECT * FROM block_skips ORDER BY blockId, epochDay")
+    suspend fun allOnce(): List<BlockSkip>
+
+    @Query("SELECT COUNT(*) > 0 FROM block_skips WHERE blockId = :blockId AND epochDay = :epochDay")
+    suspend fun exists(blockId: Long, epochDay: Long): Boolean
+
+    @Insert
+    suspend fun insert(skip: BlockSkip)
+
+    @Delete
+    suspend fun delete(skip: BlockSkip)
 }

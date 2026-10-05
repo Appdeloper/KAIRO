@@ -1,5 +1,6 @@
 package com.kairo.app.data.repository
 
+import com.kairo.app.data.local.BlockSkipDao
 import com.kairo.app.data.local.FixedBlock
 import com.kairo.app.data.local.FixedBlockDao
 import com.kairo.app.data.local.Role
@@ -16,7 +17,8 @@ class RoleRepository(private val dao: RoleDao) {
     suspend fun seedDefaultsIfEmpty(): Boolean = dao.insertIfEmpty(DefaultRoles.all)
 }
 
-class TimetableRepository(private val dao: FixedBlockDao) {
+class TimetableRepository(private val dao: FixedBlockDao, private val skipDao: BlockSkipDao) {
+    fun skippedBlockIdsOn(epochDay: Long): Flow<List<Long>> = skipDao.skippedBlockIdsOn(epochDay)
     fun blocksForDay(dayOfWeek: Int): Flow<List<FixedBlock>> = dao.blocksForDay(dayOfWeek)
     fun allBlocks(): Flow<List<FixedBlock>> = dao.allBlocks()
     suspend fun save(block: FixedBlock): Long = dao.upsert(block)

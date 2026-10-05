@@ -2,6 +2,7 @@ package com.kairo.app.ui.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -93,7 +94,8 @@ private fun MainShell() {
         NavHost(
             navController = navController,
             startDestination = TopLevelDestination.TODAY.route,
-            modifier = Modifier.padding(padding),
+            // Consuming tells each screen's own Scaffold these insets are handled, so it doesn't pad them twice.
+            modifier = Modifier.padding(padding).consumeWindowInsets(padding),
         ) {
             composable(TopLevelDestination.TODAY.route) { TodayScreen() }
             composable(TopLevelDestination.TIMETABLE.route) { TimetableScreen() }

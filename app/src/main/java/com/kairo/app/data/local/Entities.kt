@@ -91,3 +91,19 @@ data class Reminder(
     val triggerAtEpochMillis: Long,
     val delivered: Boolean = false,
 )
+
+/**
+ * A one-day exception to a weekly FixedBlock ("skip gym today"). The block itself is never edited,
+ * so skipping can't accidentally change the timetable for other weeks.
+ */
+@Entity(
+    tableName = "block_skips",
+    primaryKeys = ["blockId", "epochDay"],
+    foreignKeys = [
+        ForeignKey(entity = FixedBlock::class, parentColumns = ["id"], childColumns = ["blockId"], onDelete = ForeignKey.CASCADE),
+    ],
+)
+data class BlockSkip(
+    val blockId: Long,
+    val epochDay: Long,
+)

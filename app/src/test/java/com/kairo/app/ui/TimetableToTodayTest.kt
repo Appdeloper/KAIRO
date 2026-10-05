@@ -8,10 +8,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kairo.app.data.local.FixedBlock
 import com.kairo.app.data.local.KairoDatabase
 import com.kairo.app.data.prefs.UserPrefsRepository
+import com.kairo.app.data.repository.PlanRepository
 import com.kairo.app.data.repository.RoleRepository
 import com.kairo.app.data.repository.TaskRepository
 import com.kairo.app.data.repository.TimetableRepository
 import com.kairo.app.domain.TimelineEntry
+import com.kairo.app.domain.plan.CommandExecutor
 import com.kairo.app.ui.timetable.TimetableViewModel
 import com.kairo.app.ui.today.TodayViewModel
 import com.kairo.app.util.DateProvider
@@ -62,18 +64,22 @@ class TimetableToTodayTest {
 
     private fun todayViewModel(date: LocalDate) = TodayViewModel(
         TaskRepository(db.taskDao()),
-        TimetableRepository(db.fixedBlockDao()),
+        TimetableRepository(db.fixedBlockDao(), db.blockSkipDao()),
         RoleRepository(db.roleDao()),
         UserPrefsRepository(PreferenceDataStoreFactory.create { tmp.newFile("p${date}.preferences_pb") }),
         fixedDate(date),
+        PlanRepository(db, prefsFor(date), fixedDate(date)),
+        CommandExecutor(PlanRepository(db, prefsFor(date), fixedDate(date))),
     )
+
+    private fun prefsFor(date: LocalDate) = UserPrefsRepository(PreferenceDataStoreFactory.create { tmp.newFile("q$date.preferences_pb") })
 
     @Test
     fun lectureAddedInTimetableAppearsOnTodayForThatWeekday() = runBlocking {
         val roles = RoleRepository(db.roleDao())
         roles.seedDefaultsIfEmpty()
         val collegeId = db.roleDao().allRoles().first().first().id
-        val timetable = TimetableViewModel(TimetableRepository(db.fixedBlockDao()), roles)
+        val timetable = TimetableViewModel(TimetableRepository(db.fixedBlockDao(), db.blockSkipDao()), roles)
         val mondayView = todayViewModel(monday)
         val tuesdayView = todayViewModel(monday.plusDays(1))
 
