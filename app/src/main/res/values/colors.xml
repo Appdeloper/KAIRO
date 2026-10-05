@@ -3,4 +3,6 @@
     <color name="kairo_background">#FF07070B</color>
     <color name="kairo_neon_cyan">#FF00F0FF</color>
     <color name="kairo_neon_magenta">#FFFF2BD6</color>
+    <!-- Extra minutes from Extend, shown after the role-coloured planned part of the focus progress bar. -->
+    <color name="focus_extension">#FFFFC857</color>
 </resources>

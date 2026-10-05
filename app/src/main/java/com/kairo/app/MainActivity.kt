@@ -23,6 +23,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         handleRearm(intent)
+        // Force-stop cancels our alarms: on every cold open, resume or close a stuck focus session.
+        if (savedInstanceState == null) lifecycleScope.launch { (application as KairoApp).container.focusEngine.reconcile() }
         setContent {
             KairoTheme {
                 Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {

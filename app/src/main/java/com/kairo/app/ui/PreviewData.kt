@@ -37,7 +37,7 @@ object PreviewData {
     private val todayTasks = listOf(
         Task(1, "Client logo revisions", 3, 60, priority = 2, status = TaskStatus.DONE,
             scheduledEpochDay = today.toEpochDay(), scheduledStartMinute = 14 * 60, createdAt = 0),
-        Task(2, "Edit reel #12", 4, 45, priority = 3, status = TaskStatus.SCHEDULED,
+        Task(2, "Edit reel #12", 4, 45, priority = 3, status = TaskStatus.SCHEDULED, nextStep = "Add captions to the second half",
             scheduledEpochDay = today.toEpochDay(), scheduledStartMinute = 16 * 60, createdAt = 0),
         Task(3, "Intern report", 2, 90, priority = 1, status = TaskStatus.SCHEDULED,
             scheduledEpochDay = today.toEpochDay(), scheduledStartMinute = 20 * 60, createdAt = 0),

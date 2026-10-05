@@ -238,7 +238,16 @@ private fun UpNext(entries: List<TimelineEntry>, onTaskClick: (Task) -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.width(72.dp),
                 )
-                Text(entry.title, style = MaterialTheme.typography.bodyLarge)
+                Column {
+                    Text(entry.title, style = MaterialTheme.typography.bodyLarge)
+                    task?.nextStep?.let { step ->
+                        Text(
+                            stringResource(R.string.timeline_next_step, step),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
             }
         }
     }

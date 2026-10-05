@@ -25,6 +25,13 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
+    <!-- Focus sessions (docs/FOCUS_TEST_CHECKLIST.md). POST_PROMOTED_NOTIFICATIONS is a normal
+         (install-time) permission that lets Android 16+ show the running session as a Live Update;
+         the user can still turn Live Updates off per app. ACCESS_NOTIFICATION_POLICY is only used
+         after the user opts in to "Silence notifications during focus" and grants access in Settings. -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+
     <!-- Android 11+ package visibility: let us find the device's speech recogniser and TTS engine. -->
     <queries>
         <intent>
@@ -119,6 +126,29 @@
         <!-- Re-arms shake after reboot/update if the user turned it on (protected broadcasts only). -->
         <receiver
             android:name=".service.shake.ShakeBootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Running focus session and the "next step" capture; opened only by user taps. -->
+        <activity
+            android:name=".ui.focus.FocusActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.Kairo"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Our own notification actions and focus alarms only. -->
+        <receiver
+            android:name=".service.focus.FocusReceiver"
+            android:exported="false" />
+
+        <!-- Resumes or closes a running focus session after reboot/update (protected broadcasts only). -->
+        <receiver
+            android:name=".service.focus.FocusBootReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

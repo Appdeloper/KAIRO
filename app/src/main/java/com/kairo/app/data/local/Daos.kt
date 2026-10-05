@@ -93,6 +93,9 @@ interface TaskDao {
 
     @Query("UPDATE tasks SET status = :status WHERE id = :taskId")
     suspend fun setStatus(taskId: Long, status: TaskStatus)
+
+    @Query("UPDATE tasks SET nextStep = :nextStep WHERE id = :taskId")
+    suspend fun setNextStep(taskId: Long, nextStep: String?)
 }
 
 @Dao
@@ -138,4 +141,63 @@ interface AlarmDao {
 
     @Delete
     suspend fun delete(alarm: Alarm)
+}
+
+@Dao
+interface FocusDao {
+    @Query("SELECT * FROM focus_sessions WHERE outcome = 'RUNNING' LIMIT 1")
+    fun runningFlow(): Flow<FocusSession?>
+
+    @Query("SELECT * FROM focus_sessions WHERE outcome = 'RUNNING' LIMIT 1")
+    suspend fun running(): FocusSession?
+
+    @Query("SELECT * FROM focus_sessions WHERE id = :id")
+    suspend fun findById(id: Long): FocusSession?
+
+    @Query("SELECT * FROM focus_sessions WHERE id = :id")
+    fun sessionFlow(id: Long): Flow<FocusSession?>
+
+    @Insert
+    suspend fun insert(session: FocusSession): Long
+
+    @Update
+    suspend fun update(session: FocusSession)
+
+    @Insert
+    suspend fun insertLog(log: FocusLog): Long
+
+    @Query("SELECT * FROM focus_logs ORDER BY id")
+    suspend fun allLogs(): List<FocusLog>
+
+    @Query("UPDATE focus_sessions SET nextStep = :text WHERE id = :sessionId")
+    suspend fun setSessionNextStep(sessionId: Long, text: String?)
+
+    /** The one-running rule lives here, in a transaction, so two quick taps can't start two sessions. */
+    @Transaction
+    suspend fun startIfIdle(session: FocusSession): Long? {
+        if (running() != null) return null
+        return insert(session)
+    }
+
+    /**
+     * Ends a session and logs it exactly once. The RUNNING check makes Done-from-notification racing
+     * the end alarm harmless: whichever arrives second finds nothing to end.
+     */
+    @Transaction
+    suspend fun finishIfRunning(id: Long, ended: FocusSession, log: FocusLog): Boolean {
+        val current = findById(id) ?: return false
+        if (current.outcome != FocusOutcome.RUNNING) return false
+        update(ended)
+        insertLog(log)
+        return true
+    }
+
+    /** Extend, or re-anchor after a reboot; only while still running. */
+    @Transaction
+    suspend fun updateIfRunning(session: FocusSession): Boolean {
+        val current = findById(session.id) ?: return false
+        if (current.outcome != FocusOutcome.RUNNING) return false
+        update(session)
+        return true
+    }
 }

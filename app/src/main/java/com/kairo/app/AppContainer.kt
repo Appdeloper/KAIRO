@@ -11,14 +11,18 @@ import com.kairo.app.ai.PlannerSnapshot
 import com.kairo.app.data.local.KairoDatabase
 import com.kairo.app.data.prefs.AiSettingsRepository
 import com.kairo.app.data.prefs.BriefCacheStore
+import com.kairo.app.data.prefs.FocusPrefsRepository
 import com.kairo.app.data.prefs.ShakePrefsRepository
 import com.kairo.app.data.prefs.UserPrefsRepository
 import com.kairo.app.data.repository.AlarmRepository
+import com.kairo.app.data.repository.FocusRepository
 import com.kairo.app.data.repository.PlanRepository
 import com.kairo.app.data.repository.RoleRepository
 import com.kairo.app.data.repository.TaskRepository
 import com.kairo.app.data.repository.TimetableRepository
 import com.kairo.app.domain.plan.CommandExecutor
+import com.kairo.app.service.focus.AndroidFocusClock
+import com.kairo.app.service.focus.FocusEngine
 import com.kairo.app.util.DateProvider
 import com.kairo.app.util.SystemDateProvider
 import kotlinx.coroutines.flow.first
@@ -40,6 +44,10 @@ class AppContainer(context: Context) {
 
     /** App-wide so the undo history survives leaving and re-entering a screen. */
     val commandExecutor by lazy { CommandExecutor(planRepository) }
+
+    val focusPrefsRepository by lazy { FocusPrefsRepository(appContext.userPrefsStore) }
+    val focusRepository by lazy { FocusRepository(database.focusDao(), database.taskDao(), AndroidFocusClock(appContext)::read) }
+    val focusEngine by lazy { FocusEngine(appContext, focusRepository, focusPrefsRepository, roleRepository) }
 
     val shakePrefsRepository by lazy { ShakePrefsRepository(appContext.userPrefsStore) }
     val aiSettingsRepository by lazy { AiSettingsRepository(appContext.userPrefsStore) }

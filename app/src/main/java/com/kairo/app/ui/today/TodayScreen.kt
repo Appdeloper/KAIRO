@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -77,6 +78,13 @@ import com.kairo.app.ui.command.CommandFeedbackEffect
 import com.kairo.app.ui.components.RoleDot
 import com.kairo.app.ui.containerFactory
 import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.focus.FocusActivity
+import com.kairo.app.ui.focus.FocusChip
+import com.kairo.app.ui.focus.FocusLauncherViewModel
+import com.kairo.app.ui.focus.FocusStartSheet
+import com.kairo.app.ui.focus.FocusTarget
+import com.kairo.app.ui.focus.focusLauncherFactory
+import com.kairo.app.ui.focus.rememberFocusRemaining
 import com.kairo.app.util.formatMinuteOfDay
 import com.kairo.app.util.parseHexColor
 import java.time.LocalDate
@@ -86,6 +94,7 @@ import java.time.format.FormatStyle
 @Composable
 fun TodayScreen(
     onOpenAlarms: () -> Unit = {},
+    focus: FocusLauncherViewModel = viewModel(factory = focusLauncherFactory()),
     viewModel: TodayViewModel = viewModel(
         factory = containerFactory {
             TodayViewModel(
@@ -103,6 +112,12 @@ fun TodayScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     CommandFeedbackEffect(viewModel.events, snackbarHostState, onUndo = viewModel::undo)
+    val runningFocus by focus.running.collectAsStateWithLifecycle()
+    val focusDefault by focus.defaultMinutes.collectAsStateWithLifecycle()
+    var focusTarget by remember { mutableStateOf<FocusTarget?>(null) }
+    val resources = LocalResources.current
+    LaunchedEffect(focus) { focus.messages.collect { snackbarHostState.showSnackbar(resources.getString(it)) } }
+    val openFocus = { id: Long -> context.startActivity(FocusActivity.sessionIntent(context, id)) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -112,16 +127,37 @@ fun TodayScreen(
         TodayContent(
             state = state,
             onTaskClick = viewModel::toggleDone,
+            onEntryClick = { focusTarget = FocusTarget.from(it) },
             onBriefMe = { context.startActivity(BriefingActivity.intent(context)) },
             alarmSlot = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     // Only nag about alarm permissions once the user actually relies on alarms.
                     ShakeStoppedCard()
+                    runningFocus?.let { session ->
+                        FocusChip(session.blockLabel, rememberFocusRemaining(session), onClick = { openFocus(session.id) })
+                    }
                     if (alarms.anyEnabled) AlarmPermissionBanner(alarmHealth, fixAlarmIssue)
                     alarms.next?.let { (plan, at) -> NextAlarmChip(plan.label, at, onOpenAlarms) }
                 }
             },
             modifier = Modifier.padding(padding),
+        )
+    }
+
+    focusTarget?.let { target ->
+        FocusStartSheet(
+            target = target,
+            defaultMinutes = focusDefault,
+            running = runningFocus,
+            onStart = { minutes ->
+                focus.start(target, minutes)
+                focusTarget = null
+            },
+            onOpenRunning = {
+                runningFocus?.let { openFocus(it.id) }
+                focusTarget = null
+            },
+            onDismiss = { focusTarget = null },
         )
     }
 
@@ -168,6 +204,7 @@ fun TodayContent(
     state: TodayUiState,
     onTaskClick: (Task) -> Unit,
     modifier: Modifier = Modifier,
+    onEntryClick: (TimelineEntry) -> Unit = {},
     onBriefMe: () -> Unit = {},
     alarmSlot: @Composable () -> Unit = {},
 ) {
@@ -190,7 +227,7 @@ fun TodayContent(
             }
         }
         items(state.entries, key = { it.key() }) { entry ->
-            TimelineRow(entry, onTaskClick)
+            TimelineRow(entry, onTaskClick, onEntryClick)
         }
     }
 }
@@ -253,7 +290,7 @@ private fun ProgressCard(state: TodayUiState) {
 }
 
 @Composable
-private fun TimelineRow(entry: TimelineEntry, onTaskClick: (Task) -> Unit) {
+private fun TimelineRow(entry: TimelineEntry, onTaskClick: (Task) -> Unit, onEntryClick: (TimelineEntry) -> Unit) {
     val context = LocalContext.current
     val roleColor = entry.role?.let { parseHexColor(it.colorHex) } ?: Color.Gray
     val start = entry.startMinute
@@ -271,7 +308,8 @@ private fun TimelineRow(entry: TimelineEntry, onTaskClick: (Task) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (taskEntry != null) Modifier.clickable { onTaskClick(taskEntry.task) } else Modifier),
+            // Tapping a row starts focus; the check icon on the right still ticks a task off.
+            .clickable { onEntryClick(entry) },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
         Row(Modifier.height(IntrinsicSize.Min)) {
@@ -310,6 +348,14 @@ private fun TimelineRow(entry: TimelineEntry, onTaskClick: (Task) -> Unit) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    taskEntry?.task?.nextStep?.let { step ->
+                        Text(
+                            stringResource(R.string.timeline_next_step, step),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = roleColor,
+                            maxLines = 2,
+                        )
+                    }
                 }
                 when {
                     taskEntry == null -> Icon(
@@ -317,8 +363,13 @@ private fun TimelineRow(entry: TimelineEntry, onTaskClick: (Task) -> Unit) {
                         contentDescription = stringResource(R.string.cd_fixed_block),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    isDone -> Icon(Icons.Filled.CheckCircle, stringResource(R.string.cd_task_done), tint = roleColor)
-                    else -> Icon(Icons.Outlined.Circle, stringResource(R.string.cd_task_not_done), tint = roleColor)
+                    else -> IconButton(onClick = { onTaskClick(taskEntry.task) }) {
+                        if (isDone) {
+                            Icon(Icons.Filled.CheckCircle, stringResource(R.string.cd_task_done), tint = roleColor)
+                        } else {
+                            Icon(Icons.Outlined.Circle, stringResource(R.string.cd_task_not_done), tint = roleColor)
+                        }
+                    }
                 }
             }
         }

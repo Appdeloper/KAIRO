@@ -145,3 +145,48 @@ data class Alarm(
     val snoozeCount: Int = 0,
     val snoozedUntilMillis: Long? = null,
 )
+
+enum class FocusOutcome { RUNNING, DONE, EXTENDED, DROPPED }
+
+/**
+ * One focus session. Wall-clock times are for display, logs and recovery after a reboot; the
+ * elapsed-realtime anchor (with the boot it belongs to) keeps the countdown right on the same boot
+ * even if the user changes the clock. At most one row is RUNNING (FocusSessionDao.startIfIdle).
+ */
+@Entity(
+    tableName = "focus_sessions",
+    foreignKeys = [
+        ForeignKey(entity = Task::class, parentColumns = ["id"], childColumns = ["taskId"], onDelete = ForeignKey.SET_NULL),
+    ],
+    indices = [Index("taskId"), Index("outcome")],
+)
+data class FocusSession(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val taskId: Long? = null,
+    val blockLabel: String,
+    /** Copied at start so the log keeps the role even if the task is deleted later. */
+    val roleId: Long? = null,
+    val startAtEpochMillis: Long,
+    val plannedEndEpochMillis: Long,
+    val actualEndEpochMillis: Long? = null,
+    val outcome: FocusOutcome = FocusOutcome.RUNNING,
+    val startElapsedMillis: Long,
+    /** Settings.Global.BOOT_COUNT at start (or at the last re-anchor after a reboot). */
+    val bootCount: Int,
+    /** What the user first picked, before any Extend; FocusLog compares against this. */
+    val plannedMinutes: Int,
+    val extendedMinutes: Int = 0,
+    /** Next step for sessions without a task (a lecture block), so the text isn't lost. */
+    val nextStep: String? = null,
+)
+
+/** One row per finished session, kept small and task-free for Phase 3 insights. */
+@Entity(tableName = "focus_logs")
+data class FocusLog(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val hourOfDay: Int,
+    val roleId: Long? = null,
+    val plannedMinutes: Int,
+    val actualMinutes: Int,
+    val completed: Boolean,
+)
