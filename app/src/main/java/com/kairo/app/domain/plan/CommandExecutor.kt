@@ -56,6 +56,21 @@ class CommandExecutor(private val store: PlanStore, private val historyLimit: In
         is Command.BrainDump -> planBrainDump(command, state)
     }
 
+    /**
+     * Several commands from one sentence ("call add kar aur gym skip kar") become one diff, so the
+     * user previews, applies and undoes them together. Each command sees the ones before it.
+     */
+    fun planAll(commands: List<Command>, state: PlanState): PlanDiff {
+        var working = state
+        var total = PlanDiff()
+        for (command in commands) {
+            val step = plan(command, working)
+            total += step
+            working = working.afterPreview(step)
+        }
+        return total
+    }
+
     suspend fun apply(diff: PlanDiff): ApplyResult = mutex.withLock {
         if (!diff.canApply) return ApplyResult.NothingToApply
         try {

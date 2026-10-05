@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kairo.app.R
+import com.kairo.app.ai.AiSettings
 import com.kairo.app.data.local.Role
 import com.kairo.app.data.prefs.UserPrefs
 import com.kairo.app.ui.PreviewData
@@ -41,18 +42,26 @@ import com.kairo.app.ui.theme.KairoTheme
 @Composable
 fun SettingsScreen(
     viewModel: ProfileViewModel = viewModel(factory = containerFactory { ProfileViewModel(it.userPrefsRepository, it.roleRepository) }),
+    aiViewModel: AiSettingsViewModel = viewModel(factory = containerFactory { AiSettingsViewModel(it.aiSettingsRepository) }),
 ) {
     val prefs by viewModel.prefs.collectAsStateWithLifecycle()
     val roles by viewModel.roles.collectAsStateWithLifecycle()
-    // Wait for the stored profile so the form never starts from placeholder values.
-    prefs?.let { SettingsContent(prefs = it, roles = roles, onSave = viewModel::save) }
+    val ai by aiViewModel.settings.collectAsStateWithLifecycle()
+    // Wait for stored values so neither form starts from placeholder values.
+    val loadedPrefs = prefs
+    val loadedAi = ai
+    if (loadedPrefs != null && loadedAi != null) {
+        SettingsContent(prefs = loadedPrefs, roles = roles, ai = loadedAi, onSave = viewModel::save, onSaveAi = aiViewModel::save)
+    }
 }
 
 @Composable
 fun SettingsContent(
     prefs: UserPrefs,
     roles: List<Role>,
+    ai: AiSettings,
     onSave: (name: String, wakeMinute: Int, sleepMinute: Int) -> Unit,
+    onSaveAi: (AiSettings) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var name by rememberSaveable(prefs) { mutableStateOf(prefs.firstName) }
@@ -81,6 +90,8 @@ fun SettingsContent(
             Text(stringResource(if (dirty) R.string.action_save else R.string.settings_saved))
         }
 
+        AiSettingsSection(saved = ai, onSave = onSaveAi)
+
         Text(stringResource(R.string.settings_roles), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
         roles.forEach { role ->
             Card(
@@ -106,6 +117,12 @@ fun SettingsContent(
 @Composable
 private fun SettingsContentPreview() {
     KairoTheme {
-        SettingsContent(prefs = UserPrefs(firstName = "Aarav", onboardingDone = true), roles = PreviewData.roles, onSave = { _, _, _ -> })
+        SettingsContent(
+            prefs = UserPrefs(firstName = "Aarav", onboardingDone = true),
+            roles = PreviewData.roles,
+            ai = AiSettings(),
+            onSave = { _, _, _ -> },
+            onSaveAi = {},
+        )
     }
 }

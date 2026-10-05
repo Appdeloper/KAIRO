@@ -61,4 +61,17 @@ data class PlanState(
         }
 
     fun withSkip(key: BlockSkipKey): PlanState = copy(skippedBlocks = skippedBlocks + key)
+
+    /** The state as it would be if [diff] were applied; used to chain previews, never persisted. */
+    fun afterPreview(diff: PlanDiff): PlanState = diff.mutations.fold(this) { state, change ->
+        when (change) {
+            is Change.Added -> state.withTask(change.task)
+            is Change.Moved -> state.withTask(change.after)
+            is Change.Removed -> when (val item = change.item) {
+                is RemovedItem.TaskUnscheduled -> state.withTask(item.after)
+                is RemovedItem.TaskCompleted -> state.withTask(item.after)
+                is RemovedItem.BlockSkipped -> state.withSkip(BlockSkipKey(item.block.id, item.date.toEpochDay()))
+            }
+        }
+    }
 }

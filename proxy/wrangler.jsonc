@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kairo-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // Secrets (ANTHROPIC_API_KEY, DEVICE_TOKENS) are set with `wrangler secret put`, never here.
+  "vars": {
+    "QUOTA_TZ": "Asia/Kolkata",
+    "PARSE_DAILY_LIMIT": "50",
+    "BRIEF_DAILY_LIMIT": "3"
+  },
+  "kv_namespaces": [
+    // Replace with the id printed by `npx wrangler kv namespace create QUOTA`.
+    { "binding": "QUOTA", "id": "REPLACE_WITH_YOUR_KV_NAMESPACE_ID" }
+  ],
+  "observability": { "enabled": true }
+}

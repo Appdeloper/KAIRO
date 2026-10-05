@@ -2,6 +2,11 @@ package com.kairo.app.ui.today
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kairo.app.ai.CommandParserFacade
+import com.kairo.app.ai.ParseNotice
+import com.kairo.app.ai.ParseResult
+import com.kairo.app.ai.ParseSource
+import com.kairo.app.ai.UnclearReason
 import com.kairo.app.data.local.FixedBlock
 import com.kairo.app.data.local.Task
 import com.kairo.app.data.prefs.UserPrefsRepository
@@ -14,8 +19,6 @@ import com.kairo.app.domain.DayProgress
 import com.kairo.app.domain.Greeting
 import com.kairo.app.domain.TimelineBuilder
 import com.kairo.app.domain.TimelineEntry
-import com.kairo.app.domain.parser.LocalParser
-import com.kairo.app.domain.parser.ParseContext
 import com.kairo.app.domain.plan.AppliedDiff
 import com.kairo.app.domain.plan.ApplyResult
 import com.kairo.app.domain.plan.CommandExecutor
@@ -46,7 +49,14 @@ data class TodayUiState(
 
 /** One-shot outcomes shown as snackbars. */
 sealed interface CommandEvent {
+    /** Offline parser didn't recognise the sentence (same as step 1.2). */
     data object NotUnderstood : CommandEvent
+
+    /** The cloud model looked at it and decided it isn't a safe, clear planner command. */
+    data class AiUnclear(val reason: UnclearReason) : CommandEvent
+
+    /** Handled offline, but the user should know why the cloud wasn't used. */
+    data class Notice(val notice: ParseNotice) : CommandEvent
     data class Applied(val applied: AppliedDiff) : CommandEvent
     data object Stale : CommandEvent
     data object Undone : CommandEvent
@@ -62,6 +72,7 @@ class TodayViewModel(
     private val dateProvider: DateProvider,
     private val planRepository: PlanRepository,
     private val executor: CommandExecutor,
+    private val parser: CommandParserFacade,
 ) : ViewModel() {
 
     private data class DayContent(val date: LocalDate, val blocks: List<FixedBlock>, val tasks: List<Task>, val skipped: Set<Long>)
@@ -99,16 +110,17 @@ class TodayViewModel(
         viewModelScope.launch { taskRepository.toggleDone(task) }
     }
 
-    /** Text -> Command -> PlanDiff preview. Nothing is written until applyPending(). */
+    /** Text -> Command(s) -> PlanDiff preview. Nothing is written until applyPending(). */
     fun submitCommand(text: String) {
         viewModelScope.launch {
-            val snapshot = planRepository.loadState()
-            val context = ParseContext(snapshot.today, snapshot.nowMinute, snapshot.wakeMinute, snapshot.sleepMinute)
-            val command = LocalParser.parse(text, context)
-            if (command == null) {
-                _events.send(CommandEvent.NotUnderstood)
-            } else {
-                _pendingDiff.value = executor.plan(command, snapshot)
+            val outcome = parser.parseDetailed(text)
+            outcome.notice?.let { _events.send(CommandEvent.Notice(it)) }
+            when (val result = outcome.result) {
+                is ParseResult.Parsed -> _pendingDiff.value = executor.planAll(result.commands, planRepository.loadState())
+                is ParseResult.Unclear -> _events.send(
+                    if (outcome.source == ParseSource.CLOUD) CommandEvent.AiUnclear(result.reason) else CommandEvent.NotUnderstood,
+                )
+                is ParseResult.Failed -> _events.send(CommandEvent.NotUnderstood)
             }
         }
     }

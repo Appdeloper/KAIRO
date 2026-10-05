@@ -121,4 +121,22 @@
     <string name="reason_already_skipped">“%1$s” is already skipped that day</string>
     <string name="reason_nothing_rollover">Nothing left over from %1$s</string>
     <string name="reason_no_roles">No roles set up yet</string>
+
+    <!-- Cloud AI -->
+    <string name="msg_ai_unclear">Samajh nahi aaya, dobara bolo</string>
+    <string name="msg_ai_lecture_fixed">Lectures fixed hain, unhe move nahi kar sakte</string>
+    <string name="msg_ai_quota">Aaj ka AI quota khatam. Offline mode se kaam chal raha hai.</string>
+    <string name="msg_ai_unauthorized">AI device token galat hai. Settings check karo; abhi offline mode chal raha hai.</string>
+    <string name="settings_ai">AI</string>
+    <string name="settings_ai_toggle">Use cloud AI</string>
+    <string name="settings_ai_toggle_hint">Sends only what you type plus today\'s and tomorrow\'s titles and times to your own Worker. Phone numbers and emails are removed first.</string>
+    <string name="settings_ai_url">Worker URL</string>
+    <string name="settings_ai_url_placeholder">https://kairo-proxy.you.workers.dev</string>
+    <string name="settings_ai_url_error">Must be an https:// address</string>
+    <string name="settings_ai_token">Device token</string>
+    <string name="settings_ai_status_off">AI is off. Everything is understood on this phone.</string>
+    <string name="settings_ai_status_not_set_up">AI not set up. Using the offline parser only. Add your Worker URL and device token to turn it on.</string>
+    <string name="settings_ai_status_ready">AI on. Falls back to offline parsing if the network is slow or down.</string>
+    <string name="cd_show_token">Show token</string>
+    <string name="cd_hide_token">Hide token</string>
 </resources>

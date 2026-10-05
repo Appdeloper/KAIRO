@@ -8,6 +8,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kairo.app.data.local.FixedBlock
 import com.kairo.app.data.local.KairoDatabase
 import com.kairo.app.data.prefs.UserPrefsRepository
+import com.kairo.app.ai.AiSettings
+import com.kairo.app.ai.CommandParserFacade
+import com.kairo.app.ai.FailReason
+import com.kairo.app.ai.LocalCommandParser
+import com.kairo.app.ai.ParseResult
 import com.kairo.app.data.repository.PlanRepository
 import com.kairo.app.data.repository.RoleRepository
 import com.kairo.app.data.repository.TaskRepository
@@ -70,6 +75,11 @@ class TimetableToTodayTest {
         fixedDate(date),
         PlanRepository(db, prefsFor(date), fixedDate(date)),
         CommandExecutor(PlanRepository(db, prefsFor(date), fixedDate(date))),
+        CommandParserFacade(
+            cloud = { ParseResult.Failed(FailReason.NotConfigured) },
+            local = LocalCommandParser { PlanRepository(db, prefsFor(date), fixedDate(date)).loadState() },
+            settings = { AiSettings() },
+        ),
     )
 
     private fun prefsFor(date: LocalDate) = UserPrefsRepository(PreferenceDataStoreFactory.create { tmp.newFile("q$date.preferences_pb") })

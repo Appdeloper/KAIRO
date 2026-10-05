@@ -2,7 +2,12 @@ package com.kairo.app
 
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
+import com.kairo.app.ai.CloudParser
+import com.kairo.app.ai.CommandParserFacade
+import com.kairo.app.ai.LocalCommandParser
+import com.kairo.app.ai.PlannerSnapshot
 import com.kairo.app.data.local.KairoDatabase
+import com.kairo.app.data.prefs.AiSettingsRepository
 import com.kairo.app.data.prefs.UserPrefsRepository
 import com.kairo.app.data.repository.PlanRepository
 import com.kairo.app.data.repository.RoleRepository
@@ -11,6 +16,7 @@ import com.kairo.app.data.repository.TimetableRepository
 import com.kairo.app.domain.plan.CommandExecutor
 import com.kairo.app.util.DateProvider
 import com.kairo.app.util.SystemDateProvider
+import kotlinx.coroutines.flow.first
 
 private val Context.userPrefsStore by preferencesDataStore(name = "user_prefs")
 
@@ -28,4 +34,19 @@ class AppContainer(context: Context) {
 
     /** App-wide so the undo history survives leaving and re-entering a screen. */
     val commandExecutor by lazy { CommandExecutor(planRepository) }
+
+    val aiSettingsRepository by lazy { AiSettingsRepository(appContext.userPrefsStore) }
+    private val httpClient by lazy { CloudParser.defaultHttpClient() }
+
+    val commandParser by lazy {
+        CommandParserFacade(
+            cloud = CloudParser(
+                http = httpClient,
+                settings = aiSettingsRepository::current,
+                snapshot = { PlannerSnapshot(planRepository.loadState(), userPrefsRepository.prefs.first().firstName) },
+            ),
+            local = LocalCommandParser(planRepository::loadState),
+            settings = aiSettingsRepository::current,
+        )
+    }
 }

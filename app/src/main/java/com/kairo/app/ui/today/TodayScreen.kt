@@ -61,6 +61,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kairo.app.R
+import com.kairo.app.ai.ParseNotice
+import com.kairo.app.ai.UnclearReason
 import com.kairo.app.data.local.Task
 import com.kairo.app.domain.DayPart
 import com.kairo.app.domain.TimelineEntry
@@ -80,7 +82,7 @@ fun TodayScreen(
         factory = containerFactory {
             TodayViewModel(
                 it.taskRepository, it.timetableRepository, it.roleRepository, it.userPrefsRepository,
-                it.dateProvider, it.planRepository, it.commandExecutor,
+                it.dateProvider, it.planRepository, it.commandExecutor, it.commandParser,
             )
         },
     ),
@@ -98,6 +100,15 @@ fun TodayScreen(
                     if (result == SnackbarResult.ActionPerformed) viewModel.undo(event.applied)
                 }
                 CommandEvent.NotUnderstood -> snackbarHostState.showSnackbar(messages.notUnderstood)
+                is CommandEvent.AiUnclear -> snackbarHostState.showSnackbar(
+                    if (event.reason == UnclearReason.LECTURE_FIXED) messages.lectureFixed else messages.aiUnclear,
+                )
+                is CommandEvent.Notice -> snackbarHostState.showSnackbar(
+                    when (val notice = event.notice) {
+                        is ParseNotice.QuotaExceeded -> notice.message ?: messages.quotaFallback
+                        ParseNotice.Unauthorized -> messages.aiUnauthorized
+                    },
+                )
                 CommandEvent.Stale -> snackbarHostState.showSnackbar(messages.stale)
                 CommandEvent.Undone -> snackbarHostState.showSnackbar(messages.undone)
                 CommandEvent.UndoFailed -> snackbarHostState.showSnackbar(messages.undoFailed)
@@ -126,6 +137,10 @@ private data class CommandMessages(
     val stale: String,
     val undone: String,
     val undoFailed: String,
+    val aiUnclear: String,
+    val lectureFixed: String,
+    val quotaFallback: String,
+    val aiUnauthorized: String,
 ) {
     companion object {
         @Composable
@@ -136,6 +151,10 @@ private data class CommandMessages(
             stale = stringResource(R.string.msg_stale),
             undone = stringResource(R.string.msg_undone),
             undoFailed = stringResource(R.string.msg_undo_failed),
+            aiUnclear = stringResource(R.string.msg_ai_unclear),
+            lectureFixed = stringResource(R.string.msg_ai_lecture_fixed),
+            quotaFallback = stringResource(R.string.msg_ai_quota),
+            aiUnauthorized = stringResource(R.string.msg_ai_unauthorized),
         )
     }
 }
