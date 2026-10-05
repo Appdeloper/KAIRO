@@ -1,0 +1,64 @@
+name: Build debug APK
+
+on:
+  push:
+    branches: [claude/gallant-goldberg-0hgama]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# One fixed release is replaced on every run, so two runs must never overlap.
+concurrency:
+  group: kairo-debug-apk
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      RELEASE_TAG: kairo-debug-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # app/build.gradle.kts compiles for Java 17 (sourceCompatibility/targetCompatibility).
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # compileSdk = 37; install it up front instead of relying on AGP's auto-download.
+      - name: Install Android SDK platform 37
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" "build-tools;37.0.0" > /dev/null
+
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+
+      - name: Publish pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk kairo-debug.apk
+          BUILT_AT="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          SIZE="$(du -h kairo-debug.apk | cut -f1)"
+          cat > notes.md <<NOTES
+          Debug build of KAIRO (not for the Play Store).
+
+          - Commit: \`${GITHUB_SHA}\`
+          - Branch: \`${GITHUB_REF_NAME}\`
+          - Built: ${BUILT_AT}
+          - APK size: ${SIZE}
+          - Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          NOTES
+          # Delete and recreate so the tag always points at the commit that was built;
+          # the download URL stays the same because the tag and asset names never change.
+          gh release delete "$RELEASE_TAG" --cleanup-tag --yes || true
+          git push --delete origin "$RELEASE_TAG" 2>/dev/null || true
+          gh release create "$RELEASE_TAG" kairo-debug.apk \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "KAIRO debug (latest)" \
+            --notes-file notes.md
