@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kairo.app.R
 import com.kairo.app.ai.AiSettings
 import com.kairo.app.ui.alarms.AlarmsViewModel
+import com.kairo.app.ui.shake.ShakeSettingsSection
 import com.kairo.app.ui.alarms.alarmsViewModelFactory
 import com.kairo.app.ui.alarms.rememberAlarmHealth
 import com.kairo.app.ui.alarms.rememberHealthFixer
@@ -66,7 +67,10 @@ fun SettingsScreen(
             ai = loadedAi,
             onSave = viewModel::save,
             onSaveAi = aiViewModel::save,
-            alarmSection = { AlarmSettingsSection(alarmHealth, fixAlarm, onTestAlarm = { alarmsViewModel.scheduleTestAlarm(testLabel) }) },
+            alarmSection = {
+                AlarmSettingsSection(alarmHealth, fixAlarm, onTestAlarm = { alarmsViewModel.scheduleTestAlarm(testLabel) })
+                ShakeSettingsSection(alarmHealth, fixAlarm)
+            },
         )
     }
 }

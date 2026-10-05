@@ -96,6 +96,7 @@ fun BriefingContent(
     onClose: () -> Unit,
     onTaskClick: (Task) -> Unit,
     modifier: Modifier = Modifier,
+    topNotice: @Composable () -> Unit = {},
 ) {
     Box(
         modifier
@@ -106,6 +107,7 @@ fun BriefingContent(
     ) {
         Column(Modifier.fillMaxSize()) {
             TopRow(muted, onToggleMute, onClose)
+            topNotice()
             Column(
                 Modifier
                     .weight(1f)

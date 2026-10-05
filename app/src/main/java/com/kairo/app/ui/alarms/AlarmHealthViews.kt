@@ -124,7 +124,7 @@ fun AlarmHealthCard(health: AlarmHealth, onFix: (HealthIssue) -> Unit, modifier:
 }
 
 @Composable
-private fun HealthRow(label: Int, ok: Boolean, onFix: () -> Unit) {
+internal fun HealthRow(label: Int, ok: Boolean, onFix: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             if (ok) Icons.Outlined.CheckCircle else Icons.Outlined.WarningAmber,

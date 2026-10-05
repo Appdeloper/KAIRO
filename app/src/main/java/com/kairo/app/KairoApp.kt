@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.map
 import androidx.glance.appwidget.updateAll
 import com.kairo.app.alarm.AlarmNotifications
 import com.kairo.app.alarm.AlarmSync
+import com.kairo.app.service.shake.ShakeNotifications
+import com.kairo.app.util.AppVisibility
 import com.kairo.app.alarm.isUserUnlocked
 import com.kairo.app.ui.today.DayTimelineSource
 import com.kairo.app.ui.widget.KairoWidget
@@ -32,6 +34,8 @@ class KairoApp : Application() {
         super.onCreate()
         container = AppContainer(this)
         AlarmNotifications.createChannels(this)
+        ShakeNotifications.createChannels(this)
+        AppVisibility.register(this)
         // Direct boot (after a reboot, before first unlock): only alarm code runs, from device-protected
         // storage. Room and DataStore live in encrypted storage and would crash the process here.
         if (!isUserUnlocked()) return

@@ -251,4 +251,39 @@
     <string name="settings_test_alarm_hint">Now lock the phone and turn the screen off. It rings at the next full minute.</string>
     <string name="today_next_alarm">Alarm %1$s · %2$s</string>
     <string name="onboarding_wake_alarm">Also set a weekday wake-up alarm at %1$s</string>
+
+    <!-- Shake -->
+    <string name="channel_shake_status">Shake listener</string>
+    <string name="channel_shake_open">Shake to open</string>
+    <string name="shake_status_title">KAIRO shake is on</string>
+    <string name="shake_status_text">Shake twice to open your briefing.</string>
+    <string name="shake_stop">Stop</string>
+    <string name="shake_open_title">Tap to open your briefing</string>
+    <string name="shake_open_text">Android didn\'t let KAIRO open it directly after your shake.</string>
+    <string name="shake_rearm_title">Tap to re-arm shake</string>
+    <string name="shake_rearm_text">Your phone restarted. One tap turns shake-to-open back on.</string>
+    <string name="shake_stopped_title">Shake was stopped by your phone. Tap to fix</string>
+    <string name="shake_stopped_text">Tapping turns it back on. To stop it happening again, see Settings, Shake.</string>
+    <string name="settings_shake">Shake</string>
+    <string name="shake_toggle">Shake twice to open the briefing</string>
+    <string name="shake_honest_note">Shake depends on your phone letting KAIRO run in the background, and some phones stop it to save battery. The Quick Settings tile, the home-screen widget and the "Brief me" shortcut always work.</string>
+    <string name="shake_sensitivity">Sensitivity</string>
+    <string name="shake_meter">Now %1$.1f · trigger at %2$.1f · detected %3$d</string>
+    <string name="shake_active_hours">Active hours</string>
+    <string name="shake_only_charging">Only while charging</string>
+    <string name="shake_health_armed">Shake is armed</string>
+    <string name="shake_health_stopped">Shake is on but not running</string>
+    <string name="shake_health_off">Shake is off</string>
+    <string name="shake_health_overlay">Display over other apps (opens the briefing directly)</string>
+    <string name="shake_health_restarts">Restarts today: %1$d</string>
+    <string name="shake_health_heartbeat">Last heartbeat: %1$s</string>
+    <string name="shake_health_no_heartbeat">No heartbeat yet</string>
+    <string name="shake_health_last_path">Last shake opened via: %1$s</string>
+    <string name="shake_oem_title">%1$s phones</string>
+    <string name="shake_oem_open">Open the setting</string>
+    <string name="oem_steps_xiaomi">Security app → Permissions → Autostart: turn KAIRO on. Then Settings → Apps → KAIRO → Battery saver: No restrictions. Lock KAIRO in Recents (pull down on its card).</string>
+    <string name="oem_steps_vivo">i Manager → App manager → Autostart: allow KAIRO. Settings → Battery → Background power consumption: allow KAIRO high background usage.</string>
+    <string name="oem_steps_oppo">Settings → Apps → KAIRO → Battery: Allow background activity and Allow auto launch. Lock KAIRO in Recents.</string>
+    <string name="oem_steps_oneplus">Settings → Apps → KAIRO → Battery: Don\'t optimise / Unrestricted. Settings → Battery → Advanced optimisation: turn off Deep optimisation.</string>
+    <string name="oem_steps_samsung">Settings → Battery → Background usage limits: remove KAIRO from Sleeping and Deep sleeping apps and add it to Never sleeping apps.</string>
 </resources>

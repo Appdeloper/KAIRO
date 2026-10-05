@@ -34,6 +34,10 @@ import com.kairo.app.ui.theme.KairoTheme
 import com.kairo.app.ui.today.DayTimelineSource
 import com.kairo.app.ui.today.PlanDiffSheet
 import com.kairo.app.R
+import com.kairo.app.ui.shake.ShakeStoppedCard
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import android.graphics.Color as AndroidColor
 
 /**
@@ -153,6 +157,7 @@ private fun BriefingRoute(viewModel: BriefingViewModel, speech: SpeechProvider, 
     SpeakBriefEffect(state, resumed, muted, speaker)
 
     BriefingContent(
+        topNotice = { ShakeStoppedCard(Modifier.padding(horizontal = 16.dp)) },
         state = state,
         orbState = orbState,
         micLevel = level,

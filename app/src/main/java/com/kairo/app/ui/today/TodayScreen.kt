@@ -65,6 +65,7 @@ import com.kairo.app.domain.DayPart
 import com.kairo.app.domain.TimelineEntry
 import com.kairo.app.ui.PreviewData
 import com.kairo.app.ui.alarms.AlarmPermissionBanner
+import com.kairo.app.ui.shake.ShakeStoppedCard
 import com.kairo.app.ui.alarms.formatInstant
 import com.kairo.app.ui.alarms.rememberAlarmHealth
 import com.kairo.app.ui.alarms.rememberHealthFixer
@@ -115,6 +116,7 @@ fun TodayScreen(
             alarmSlot = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     // Only nag about alarm permissions once the user actually relies on alarms.
+                    ShakeStoppedCard()
                     if (alarms.anyEnabled) AlarmPermissionBanner(alarmHealth, fixAlarmIssue)
                     alarms.next?.let { (plan, at) -> NextAlarmChip(plan.label, at, onOpenAlarms) }
                 }

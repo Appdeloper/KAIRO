@@ -11,6 +11,7 @@ import com.kairo.app.ai.PlannerSnapshot
 import com.kairo.app.data.local.KairoDatabase
 import com.kairo.app.data.prefs.AiSettingsRepository
 import com.kairo.app.data.prefs.BriefCacheStore
+import com.kairo.app.data.prefs.ShakePrefsRepository
 import com.kairo.app.data.prefs.UserPrefsRepository
 import com.kairo.app.data.repository.AlarmRepository
 import com.kairo.app.data.repository.PlanRepository
@@ -40,6 +41,7 @@ class AppContainer(context: Context) {
     /** App-wide so the undo history survives leaving and re-entering a screen. */
     val commandExecutor by lazy { CommandExecutor(planRepository) }
 
+    val shakePrefsRepository by lazy { ShakePrefsRepository(appContext.userPrefsStore) }
     val aiSettingsRepository by lazy { AiSettingsRepository(appContext.userPrefsStore) }
     private val httpClient by lazy { CloudParser.defaultHttpClient() }
 
