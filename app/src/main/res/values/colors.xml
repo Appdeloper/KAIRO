@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="kairo_background">#FF07070B</color>
+    <color name="kairo_neon_cyan">#FF00F0FF</color>
+    <color name="kairo_neon_magenta">#FFFF2BD6</color>
+</resources>

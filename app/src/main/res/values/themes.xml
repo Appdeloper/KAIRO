@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window background matches the Compose background so there's no white flash on cold start. -->
+    <style name="Theme.Kairo" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/kairo_background</item>
+    </style>
+</resources>

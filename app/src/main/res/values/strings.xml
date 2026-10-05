@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">KAIRO</string>
+
+    <!-- Common actions -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_today">Today</string>
+    <string name="nav_timetable">Timetable</string>
+    <string name="nav_tasks">Tasks</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Onboarding / profile -->
+    <string name="onboarding_title">Hey, I\'m KAIRO</string>
+    <string name="onboarding_subtitle">Three quick things so I can plan your days.</string>
+    <string name="profile_name_label">Your first name</string>
+    <string name="profile_wake_label">Usually wake up at</string>
+    <string name="profile_sleep_label">Usually sleep at</string>
+    <string name="onboarding_start">Let\'s go</string>
+    <string name="profile_name_required">Tell me what to call you</string>
+
+    <!-- Today -->
+    <string name="greeting_morning">Good morning, %1$s</string>
+    <string name="greeting_afternoon">Good afternoon, %1$s</string>
+    <string name="greeting_evening">Good evening, %1$s</string>
+    <string name="greeting_night">Still up, %1$s?</string>
+    <string name="today_progress_count">%1$d / %2$d</string>
+    <string name="today_progress_label">tasks done</string>
+    <string name="today_empty">Nothing on the timeline yet. Add lectures in Timetable or put a task on today from Tasks.</string>
+    <string name="today_anytime">Anytime</string>
+    <string name="time_range">%1$s – %2$s</string>
+    <string name="cd_task_done">Done</string>
+    <string name="cd_task_not_done">Not done</string>
+    <string name="cd_fixed_block">Fixed block</string>
+    <string name="list_separator">" · "</string>
+
+    <!-- Timetable -->
+    <string name="timetable_add">Add block</string>
+    <string name="timetable_new_block">New block</string>
+    <string name="timetable_edit_block">Edit block</string>
+    <string name="block_title_label">Title (e.g. DBMS lecture)</string>
+    <string name="block_location_label">Room / place (optional)</string>
+    <string name="block_start">Starts %1$s</string>
+    <string name="block_end">Ends %1$s</string>
+    <string name="block_error_title">Give it a title</string>
+    <string name="block_error_time">End time must be after start time</string>
+    <string name="block_error_day">Pick a day</string>
+    <string name="block_error_role">Pick a role</string>
+
+    <!-- Tasks -->
+    <string name="tasks_backlog">Backlog</string>
+    <string name="tasks_carried_over">Left over from earlier days</string>
+    <string name="tasks_empty">No open tasks. Tap + to add one.</string>
+    <string name="tasks_add">Add task</string>
+    <string name="tasks_put_on_today">Today</string>
+    <string name="task_title_label">What needs doing?</string>
+    <string name="task_duration_label">How long?</string>
+    <string name="task_priority_label">Priority</string>
+    <string name="task_deadline_label">Deadline</string>
+    <string name="task_deadline_none">No deadline</string>
+    <string name="task_deadline_clear">Clear</string>
+    <string name="task_duration_minutes">%1$d min</string>
+    <string name="task_priority_short">P%1$d</string>
+    <string name="task_due">Due %1$s</string>
+    <string name="task_error_title">Give it a title</string>
+
+    <!-- Settings -->
+    <string name="settings_profile">Profile</string>
+    <string name="settings_roles">Roles</string>
+    <string name="settings_saved">Saved</string>
+    <string name="settings_role_budget">%1$d min / day</string>
+</resources>
