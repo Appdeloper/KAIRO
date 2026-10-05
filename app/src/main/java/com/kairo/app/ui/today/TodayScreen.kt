@@ -30,14 +30,13 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,12 +60,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kairo.app.R
-import com.kairo.app.ai.ParseNotice
-import com.kairo.app.ai.UnclearReason
 import com.kairo.app.data.local.Task
 import com.kairo.app.domain.DayPart
 import com.kairo.app.domain.TimelineEntry
 import com.kairo.app.ui.PreviewData
+import com.kairo.app.ui.briefing.BriefingActivity
+import com.kairo.app.ui.command.CommandFeedbackEffect
 import com.kairo.app.ui.components.RoleDot
 import com.kairo.app.ui.containerFactory
 import com.kairo.app.ui.theme.KairoTheme
@@ -90,72 +89,24 @@ fun TodayScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val pendingDiff by viewModel.pendingDiff.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val messages = CommandMessages.resolve()
-
-    LaunchedEffect(viewModel) {
-        viewModel.events.collect { event ->
-            when (event) {
-                is CommandEvent.Applied -> {
-                    val result = snackbarHostState.showSnackbar(messages.applied, actionLabel = messages.undo, duration = SnackbarDuration.Long)
-                    if (result == SnackbarResult.ActionPerformed) viewModel.undo(event.applied)
-                }
-                CommandEvent.NotUnderstood -> snackbarHostState.showSnackbar(messages.notUnderstood)
-                is CommandEvent.AiUnclear -> snackbarHostState.showSnackbar(
-                    if (event.reason == UnclearReason.LECTURE_FIXED) messages.lectureFixed else messages.aiUnclear,
-                )
-                is CommandEvent.Notice -> snackbarHostState.showSnackbar(
-                    when (val notice = event.notice) {
-                        is ParseNotice.QuotaExceeded -> notice.message ?: messages.quotaFallback
-                        ParseNotice.Unauthorized -> messages.aiUnauthorized
-                    },
-                )
-                CommandEvent.Stale -> snackbarHostState.showSnackbar(messages.stale)
-                CommandEvent.Undone -> snackbarHostState.showSnackbar(messages.undone)
-                CommandEvent.UndoFailed -> snackbarHostState.showSnackbar(messages.undoFailed)
-            }
-        }
-    }
+    val context = LocalContext.current
+    CommandFeedbackEffect(viewModel.events, snackbarHostState, onUndo = viewModel::undo)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = { CommandBar(onSubmit = viewModel::submitCommand) },
     ) { padding ->
-        TodayContent(state = state, onTaskClick = viewModel::toggleDone, modifier = Modifier.padding(padding))
+        TodayContent(
+            state = state,
+            onTaskClick = viewModel::toggleDone,
+            onBriefMe = { context.startActivity(BriefingActivity.intent(context)) },
+            modifier = Modifier.padding(padding),
+        )
     }
 
     pendingDiff?.let { diff ->
         PlanDiffSheet(diff = diff, today = state.date, onApply = viewModel::applyPending, onCancel = viewModel::dismissPending)
-    }
-}
-
-/** Snackbar texts resolved up front, because showSnackbar runs outside composition. */
-private data class CommandMessages(
-    val applied: String,
-    val undo: String,
-    val notUnderstood: String,
-    val stale: String,
-    val undone: String,
-    val undoFailed: String,
-    val aiUnclear: String,
-    val lectureFixed: String,
-    val quotaFallback: String,
-    val aiUnauthorized: String,
-) {
-    companion object {
-        @Composable
-        fun resolve() = CommandMessages(
-            applied = stringResource(R.string.msg_applied),
-            undo = stringResource(R.string.msg_undo),
-            notUnderstood = stringResource(R.string.msg_not_understood),
-            stale = stringResource(R.string.msg_stale),
-            undone = stringResource(R.string.msg_undone),
-            undoFailed = stringResource(R.string.msg_undo_failed),
-            aiUnclear = stringResource(R.string.msg_ai_unclear),
-            lectureFixed = stringResource(R.string.msg_ai_lecture_fixed),
-            quotaFallback = stringResource(R.string.msg_ai_quota),
-            aiUnauthorized = stringResource(R.string.msg_ai_unauthorized),
-        )
     }
 }
 
@@ -193,13 +144,13 @@ fun CommandBar(onSubmit: (String) -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TodayContent(state: TodayUiState, onTaskClick: (Task) -> Unit, modifier: Modifier = Modifier) {
+fun TodayContent(state: TodayUiState, onTaskClick: (Task) -> Unit, modifier: Modifier = Modifier, onBriefMe: () -> Unit = {}) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item { Header(state.firstName, state.dayPart, state.date) }
+        item { Header(state.firstName, state.dayPart, state.date, onBriefMe) }
         item { ProgressCard(state) }
         if (state.entries.isEmpty()) {
             item {
@@ -223,24 +174,27 @@ private fun TimelineEntry.key(): String = when (this) {
 }
 
 @Composable
-private fun Header(firstName: String, dayPart: DayPart, date: LocalDate) {
+private fun Header(firstName: String, dayPart: DayPart, date: LocalDate, onBriefMe: () -> Unit) {
     val greetingRes = when (dayPart) {
         DayPart.MORNING -> R.string.greeting_morning
         DayPart.AFTERNOON -> R.string.greeting_afternoon
         DayPart.EVENING -> R.string.greeting_evening
         DayPart.NIGHT -> R.string.greeting_night
     }
-    Column {
-        Text(
-            stringResource(greetingRes, firstName),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(
+                stringResource(greetingRes, firstName),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        FilledTonalButton(onClick = onBriefMe) { Text(stringResource(R.string.brief_me)) }
     }
 }
 

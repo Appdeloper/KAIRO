@@ -2,12 +2,15 @@ package com.kairo.app
 
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
+import com.kairo.app.ai.BriefClient
+import com.kairo.app.ai.BriefingRepository
 import com.kairo.app.ai.CloudParser
 import com.kairo.app.ai.CommandParserFacade
 import com.kairo.app.ai.LocalCommandParser
 import com.kairo.app.ai.PlannerSnapshot
 import com.kairo.app.data.local.KairoDatabase
 import com.kairo.app.data.prefs.AiSettingsRepository
+import com.kairo.app.data.prefs.BriefCacheStore
 import com.kairo.app.data.prefs.UserPrefsRepository
 import com.kairo.app.data.repository.PlanRepository
 import com.kairo.app.data.repository.RoleRepository
@@ -38,12 +41,23 @@ class AppContainer(context: Context) {
     val aiSettingsRepository by lazy { AiSettingsRepository(appContext.userPrefsStore) }
     private val httpClient by lazy { CloudParser.defaultHttpClient() }
 
+    private suspend fun plannerSnapshot() = PlannerSnapshot(planRepository.loadState(), userPrefsRepository.prefs.first().firstName)
+
+    val briefingRepository by lazy {
+        BriefingRepository(
+            client = BriefClient(httpClient, aiSettingsRepository::current),
+            cache = BriefCacheStore(appContext.userPrefsStore),
+            settings = aiSettingsRepository::current,
+            snapshot = ::plannerSnapshot,
+        )
+    }
+
     val commandParser by lazy {
         CommandParserFacade(
             cloud = CloudParser(
                 http = httpClient,
                 settings = aiSettingsRepository::current,
-                snapshot = { PlannerSnapshot(planRepository.loadState(), userPrefsRepository.prefs.first().firstName) },
+                snapshot = ::plannerSnapshot,
             ),
             local = LocalCommandParser(planRepository::loadState),
             settings = aiSettingsRepository::current,

@@ -91,6 +91,7 @@ fun SettingsContent(
         }
 
         AiSettingsSection(saved = ai, onSave = onSaveAi)
+        QuickAccessSection()
 
         Text(stringResource(R.string.settings_roles), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
         roles.forEach { role ->

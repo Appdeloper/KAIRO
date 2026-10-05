@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long-press the app icon -> "Brief me". targetPackage must match the applicationId. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="brief_me"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_orb"
+        android:shortcutShortLabel="@string/shortcut_brief_short"
+        android:shortcutLongLabel="@string/shortcut_brief_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.kairo.app"
+            android:targetClass="com.kairo.app.ui.briefing.BriefingActivity" />
+    </shortcut>
+</shortcuts>

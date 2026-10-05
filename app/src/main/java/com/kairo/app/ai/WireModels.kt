@@ -38,6 +38,15 @@ data class ToolCallDto(val name: String, val input: JsonElement)
 data class ParseResponseDto(val calls: List<ToolCallDto>)
 
 @Serializable
+data class BriefRequestDto(val deviceToken: String, val context: PlannerContextDto)
+
+@Serializable
+data class BestGapDto(val startMinute: Int, val endMinute: Int, val suggestion: String)
+
+@Serializable
+data class BriefDto(val greeting: String, val summary: String, val bestGap: BestGapDto? = null, val ifThenPlans: List<String> = emptyList())
+
+@Serializable
 data class ErrorDto(val error: String? = null, val message: String? = null)
 
 /** Lenient on unknown keys (the Worker may add fields), strict on types. */

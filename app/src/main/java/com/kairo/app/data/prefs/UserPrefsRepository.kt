@@ -43,7 +43,15 @@ class UserPrefsRepository(private val store: DataStore<Preferences>) {
         }
     }
 
+    /** Spoken briefing on/off. Separate flow so toggling it doesn't re-emit the whole profile. */
+    val speechMuted: Flow<Boolean> = store.data.map { it[SPEECH_MUTED] ?: false }
+
+    suspend fun setSpeechMuted(muted: Boolean) {
+        store.edit { it[SPEECH_MUTED] = muted }
+    }
+
     private companion object {
+        val SPEECH_MUTED = booleanPreferencesKey("speech_muted")
         val FIRST_NAME = stringPreferencesKey("first_name")
         val WAKE_MINUTE = intPreferencesKey("wake_minute")
         val SLEEP_MINUTE = intPreferencesKey("sleep_minute")

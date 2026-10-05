@@ -2,6 +2,7 @@ package com.kairo.app.ai
 
 import com.kairo.app.data.local.TaskStatus
 import com.kairo.app.domain.plan.PlanState
+import com.kairo.app.domain.plan.Slot
 import java.time.LocalDate
 import java.util.Locale
 
@@ -17,9 +18,16 @@ object ContextBuilder {
     private const val MAX_NAME = 40
     private const val MAX_ROLES = 12
     private const val MAX_ITEMS = 60
+    private const val MAX_SLOTS = 24
     private const val FALLBACK_NAME = "friend"
 
-    fun build(snapshot: PlannerSnapshot): PlannerContextDto {
+    /** For /brief: today only, plus the free slots the scheduler found, so the model can't invent a gap. */
+    fun buildForBrief(snapshot: PlannerSnapshot, freeSlots: List<Slot>): PlannerContextDto =
+        build(snapshot, includeTomorrow = false).copy(
+            freeSlots = freeSlots.filter { it.length > 0 }.take(MAX_SLOTS).map { FreeSlotDto(it.startMinute, it.endMinute) },
+        )
+
+    fun build(snapshot: PlannerSnapshot, includeTomorrow: Boolean = true): PlannerContextDto {
         val state = snapshot.state
         val roleNames = state.roles.associate { it.id to clean(it.name, MAX_NAME) }
         fun itemsOn(date: LocalDate, day: String): List<ContextItemDto> {
@@ -41,7 +49,7 @@ object ContextBuilder {
             localDate = state.today.toString(),
             localTime = String.format(Locale.ROOT, "%02d:%02d", state.nowMinute / 60, state.nowMinute % 60),
             roles = roleNames.values.filter { it.isNotBlank() }.take(MAX_ROLES),
-            items = (itemsOn(state.today, "today") + itemsOn(state.today.plusDays(1), "tomorrow"))
+            items = (itemsOn(state.today, "today") + if (includeTomorrow) itemsOn(state.today.plusDays(1), "tomorrow") else emptyList())
                 .filter { it.title.isNotBlank() }
                 .take(MAX_ITEMS),
         )

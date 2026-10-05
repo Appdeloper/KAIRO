@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path android:fillColor="@color/kairo_background" android:pathData="M24,0a24,24 0,1 1,0 48a24,24 0,1 1,0 -48z" />
+    <path android:fillColor="@color/kairo_neon_cyan" android:pathData="M24,12a12,12 0,1 1,0 24a12,12 0,1 1,0 -24z" />
+    <path android:fillColor="@color/kairo_neon_magenta" android:pathData="M24,20a4,4 0,1 1,0 8a4,4 0,1 1,0 -8z" />
+</vector>

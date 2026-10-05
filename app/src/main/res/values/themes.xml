@@ -4,4 +4,12 @@
     <style name="Theme.Kairo" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/kairo_background</item>
     </style>
+
+    <!-- Briefing floats over whatever was on screen; Compose draws its own dark scrim. -->
+    <style name="Theme.Kairo.Briefing" parent="Theme.Kairo">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
 </resources>

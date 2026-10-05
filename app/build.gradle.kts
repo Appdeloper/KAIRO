@@ -71,6 +71,8 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.work.runtime.ktx)
 
     // Cloud parsing goes only to the user's own Worker; no AI SDK or API key lives in the app.
     implementation(libs.okhttp)

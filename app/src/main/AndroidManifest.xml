@@ -3,6 +3,18 @@
 
     <!-- Only for the user's own Cloudflare Worker (cloud parsing). Mic, alarms and notifications come later. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Requested at runtime only inside BriefingActivity, never from a service (rule 6). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Android 11+ package visibility: let us find the device's speech recogniser and TTS engine. -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
 
     <application
         android:name=".KairoApp"
@@ -22,6 +34,41 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
+
+        <!-- Own task so the tile, widget and shortcut open it straight over whatever is on screen. -->
+        <activity
+            android:name=".ui.briefing.BriefingActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.kairo.app.briefing"
+            android:theme="@style/Theme.Kairo.Briefing"
+            android:windowSoftInputMode="adjustResize" />
+
+        <service
+            android:name=".service.BriefTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_orb"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".ui.widget.KairoWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/kairo_widget_info" />
+        </receiver>
     </application>
 </manifest>

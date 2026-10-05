@@ -139,4 +139,48 @@
     <string name="settings_ai_status_ready">AI on. Falls back to offline parsing if the network is slow or down.</string>
     <string name="cd_show_token">Show token</string>
     <string name="cd_hide_token">Hide token</string>
+
+    <!-- Briefing -->
+    <string name="brief_me">Brief me</string>
+    <string name="brief_empty_day">Nothing on the plan yet today. Tell me what matters and I\'ll find time for it.</string>
+    <string name="brief_empty_evening">You\'re clear for the rest of the day. Time for a quick debrief and some rest.</string>
+    <plurals name="brief_summary">
+        <item quantity="one">%1$d thing left today. Next up: %2$s at %3$s, %4$s.</item>
+        <item quantity="other">%1$d things left today. Next up: %2$s at %3$s, %4$s.</item>
+    </plurals>
+    <string name="brief_now">right now</string>
+    <string name="brief_in">in %1$s</string>
+    <string name="duration_minutes">%1$d min</string>
+    <string name="duration_hours_minutes">%1$d h %2$d min</string>
+    <string name="brief_gap_suggestion">%1$s free: good for deep work.</string>
+    <string name="brief_if_then">If %1$s runs over, then shift the next task, not your break.</string>
+    <string name="brief_best_gap">Best gap %1$s · %2$s</string>
+    <string name="brief_up_next">Up next</string>
+    <string name="brief_nothing_next">Nothing else on today.</string>
+    <string name="brief_offline">Offline brief</string>
+    <string name="brief_close">Close</string>
+    <string name="brief_mute">Mute voice</string>
+    <string name="brief_unmute">Unmute voice</string>
+    <string name="brief_mic">Speak a command</string>
+    <string name="brief_stop_listening">Stop listening</string>
+    <string name="brief_type_hint">Bolo ya type karo…</string>
+    <string name="brief_tap_to_edit">Tap to edit before it\'s sent</string>
+    <string name="brief_no_speech">Kuch suna nahi, dobara bolo</string>
+
+    <!-- Entry points -->
+    <string name="tile_label">KAIRO</string>
+    <string name="tile_subtitle">Brief me</string>
+    <string name="shortcut_brief_short">Brief me</string>
+    <string name="shortcut_brief_long">Brief me on today</string>
+    <string name="widget_description">Next thing on your plan. Tap for the full briefing.</string>
+    <string name="widget_next_minutes">Next: %1$s in %2$d min</string>
+    <string name="widget_next_hours">Next: %1$s in %2$d h %3$d min</string>
+    <string name="widget_now">Now: %1$s</string>
+    <string name="widget_all_clear">All clear today. Tap to plan.</string>
+    <string name="settings_entry_points">Quick access</string>
+    <string name="settings_add_tile">Add KAIRO to Quick Settings</string>
+    <string name="settings_tile_manual">Swipe down twice, tap the pencil (edit) and drag the KAIRO tile in. Add the widget from your home screen\'s widget list.</string>
+    <string name="settings_tile_added">Tile added</string>
+    <string name="settings_tile_already">Tile is already in Quick Settings</string>
+    <string name="settings_tile_not_added">Tile not added</string>
 </resources>
