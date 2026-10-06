@@ -116,3 +116,33 @@ in `app/build/outputs/roborazzi/`.
 ## 3. What the redesign must fix
 All of the above. The Part 1 tokens fix 1 to 11; components fix 12 to 22; the Part 2 navigation fixes 26 and 27; the
 Part 3 screens fix the rest; and the Part 7 "after" screenshots check each item again.
+
+## 4. After the redesign
+
+"After" screenshots: `docs/screenshots/after/` (56 images, same harness, now inside `KairoTheme`),
+including 200% font versions of Today, Plan tasks, Alarms, ring screen, Briefing, Focus, Onboarding and
+Settings, plus long content (`today_long.png`, 50 items) and the beta states (`whats_new.png`,
+`crash_prompt.png`, `today_offline.png`, `briefing_offline.png`). Launcher icon under three masks:
+`docs/screenshots/icon/icon_masks.png`.
+
+| # | Problem | Fixed by |
+|---|---|---|
+| 1 | Black text without a themed surface | `KairoTheme` provides `LocalContentColor`; every screen checked in the after set |
+| 2–5 | Off-brand palette and orb | Part 1 colour roles; lane colours distinct from primary; orb recoloured cyan → blue |
+| 6 | Harsh white ring time | Soft white `#F2F8FF` on navy, auto-sized to fit |
+| 7 | Tiny "Offline brief" label | `StatusPill`, plus an offline banner when cloud AI is on |
+| 8–10 | Fonts and headings | Sora/Inter, one type scale, tabular figures for every time |
+| 11 | Ad hoc spacing | 4/8 grid tokens, radius 8/16/24 |
+| 12, 25, 31 | Day chips clipped, under 48 dp | `DayPicker` with full-width 48 dp chips (AccessibilityTest) |
+| 13 | "off" label vs ON switch | Subtitle follows the switch; disabled rows dimmed |
+| 14 | Tiny week grid on phones | Day picker + list on phones; grid only on wide screens |
+| 15 | Oversized progress card | Progress ring inside the Now card |
+| 16 | Plan diff structure | Icon, label and before → after per row; full-width Apply |
+| 17 | Cramped focus sheet | Redesigned sheet with clear spacing |
+| 18 | FAB over content | No FABs; actions in the top bar, bottom-bar clearance on lists |
+| 19–21 | Empty and loading states | `EmptyState` with actions; `LoadingOrb` until data arrives |
+| 22 | Three permission styles | `Banner`, `PermissionCard` and one health section |
+| 23–24 | 200% font breakage | Stacked timeline layout, wrapping fields, tested at 200% |
+| 26–27 | Navigation | Four tabs and the centre orb button |
+| 28–29 | Notifications and widget | One brand accent and sentence-case titles; widget on brand colours |
+| 30 | Unlabelled controls, colour-only signals | AccessibilityTest; lanes always shown with a name |

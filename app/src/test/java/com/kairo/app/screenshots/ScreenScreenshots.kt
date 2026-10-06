@@ -239,6 +239,60 @@ class ScreenScreenshots {
     @Test fun settings() = Shots.captureScrolling(rule, "settings") { settingsScreen(it) }
 
     @Test fun settingsLargeFont() = Shots.captureScrolling(rule, "settings_font200", fontScale = 2f) { settingsScreen(it) }
+
+    @Test fun whatsNew() = Shots.capture(rule, "whats_new") {
+        com.kairo.app.ui.design.components.SheetFrame { com.kairo.app.ui.beta.WhatsNewContent(com.kairo.app.ui.beta.BetaPreviewData.releases, {}) }
+    }
+
+    @Test fun crashPrompt() = Shots.capture(rule, "crash_prompt") { com.kairo.app.ui.beta.CrashPrompt({}, {}) }
+
+    @Test fun todayOffline() = Shots.capture(rule, "today_offline") {
+        TodayContent(state = todayState, nextAlarm = nextAlarm, notices = { com.kairo.app.ui.command.OfflineNoticeContent() })
+    }
+
+    @Test fun todayLongContent() = Shots.capture(rule, "today_long") {
+        val role = PreviewData.roles[1]
+        val many = (0 until 50).map { i ->
+            com.kairo.app.domain.TimelineEntry.TaskEntry(
+                com.kairo.app.data.local.Task(id = 500L + i, title = "Intern report part ${i + 1}", roleId = role.id, durationMinutes = 15, scheduledEpochDay = PreviewData.today.toEpochDay(), scheduledStartMinute = 7 * 60 + i * 20, createdAt = 0),
+                role,
+            )
+        }
+        TodayContent(state = todayState.copy(entries = many, nowMinute = 6 * 60))
+    }
+
+    @Test fun briefingOffline() = Shots.capture(rule, "briefing_offline") {
+        BriefingContent(
+            BriefingUiState(brief = brief, source = BriefSource.LOCAL, briefIsFinal = true, upcoming = PreviewData.todayState.entries.take(3)),
+            OrbState.IDLE, 0.5f, false, 0, false, input, SnackbarHostState(), {}, {}, {},
+            topNotice = { com.kairo.app.ui.command.OfflineNoticeContent(androidx.compose.ui.Modifier.padding(horizontal = com.kairo.app.ui.design.Spacing.lg)) },
+        )
+    }
+
+    @Test fun briefingLargeFont() = Shots.capture(rule, "briefing_font200", fontScale = 2f) {
+        BriefingContent(
+            BriefingUiState(brief = brief, source = BriefSource.CLOUD, briefIsFinal = true, upcoming = PreviewData.todayState.entries.take(3)),
+            OrbState.IDLE, 0.5f, false, 0, false, input, SnackbarHostState(), {}, {}, {},
+        )
+    }
+
+    @Test fun planTasksLargeFont() = Shots.capture(rule, "plan_tasks_font200", fontScale = 2f) {
+        com.kairo.app.ui.plan.PlanFrame(com.kairo.app.ui.plan.PlanSegment.TASKS, {}) {
+            TasksContent(state = com.kairo.app.ui.tasks.TasksPreviewState.sample, onAdd = {}, onPutOnToday = { _, _ -> }, onToggleDone = {})
+        }
+    }
+
+    @Test fun onboardingLargeFont() = Shots.capture(rule, "onboarding_permissions_font200", fontScale = 2f) {
+        OnboardingContent(
+            PreviewData.roles, setOf(4L),
+            AlarmHealth(exactAlarms = true, fullScreen = false, notifications = false, batteryUnrestricted = true, alarmVolumeAudible = true, nextAlarm = null),
+            false, { _, _ -> }, { _, _ -> }, {}, {}, { _, _, _, _, _ -> }, startStep = com.kairo.app.ui.onboarding.OnboardingStep.PERMISSIONS,
+        )
+    }
+
+    @Test fun focusLargeFont() = Shots.capture(rule, "focus_session_font200", fontScale = 2f) {
+        FocusSessionContent("Edit reel #12", Color(0xFFFF6FB7), 17 * 60_000L + 32_000, 0.3f, 10, {}, {}, {}, {}, laneName = "Content")
+    }
 }
 
 private fun androidx.compose.ui.Modifier.androidxPad() = this.then(androidx.compose.ui.Modifier.padding(com.kairo.app.ui.design.Spacing.lg))

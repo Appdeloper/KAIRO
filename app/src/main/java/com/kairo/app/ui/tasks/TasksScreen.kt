@@ -37,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -256,21 +257,23 @@ private fun TaskRow(task: Task, role: Role?, onDone: (Task) -> Unit, onToday: ((
             { onDone(task) },
             tint = if (isDone) colors.success else lane.color,
         )
+        // Large text wraps instead of hiding the details behind "…".
+        val detailLines = if (LocalDensity.current.fontScale > LARGE_FONT_SCALE) 3 else 1
         Column(Modifier.weight(1f).padding(vertical = Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
             Text(
                 task.title,
                 style = KairoTheme.type.titleMedium,
                 textDecoration = if (isDone) TextDecoration.LineThrough else null,
                 color = if (isDone) colors.textSecondary else colors.textPrimary,
-                maxLines = 2,
+                maxLines = detailLines + 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(8.dp).clip(Radius.full).background(lane.color))
                 Spacer(Modifier.width(Spacing.sm))
-                Text(task.metaLine(role), style = KairoTheme.type.labelMedium, color = colors.textSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(task.metaLine(role), style = KairoTheme.type.labelMedium, color = colors.textSecondary, maxLines = detailLines, overflow = TextOverflow.Ellipsis)
             }
-            task.nextStep?.let { Text(stringResource(R.string.timeline_next_step, it), style = KairoTheme.type.bodySmall, color = lane.color, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+            task.nextStep?.let { Text(stringResource(R.string.timeline_next_step, it), style = KairoTheme.type.bodySmall, color = lane.color, maxLines = detailLines, overflow = TextOverflow.Ellipsis) }
         }
         if (onToday != null) {
             KairoIconButton(Icons.Outlined.Today, stringResource(R.string.tasks_put_on_today_cd, task.title), { onToday(task) }, tint = colors.primary)
@@ -312,3 +315,5 @@ private fun TasksContentEmptyPreview() {
 
 /** Shared with screenshot tests. */
 object TasksPreviewState { val sample get() = previewState }
+
+private const val LARGE_FONT_SCALE = 1.3f
