@@ -20,8 +20,7 @@ import com.kairo.app.R
 import com.kairo.app.data.local.FocusSession
 import com.kairo.app.domain.focus.FocusTiming
 import com.kairo.app.service.focus.AndroidFocusClock
-import com.kairo.app.ui.theme.KairoColors
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import kotlinx.coroutines.delay
 import java.util.Locale
 
@@ -41,7 +40,7 @@ fun rememberFocusRemaining(session: FocusSession): Long {
 }
 
 @Composable
-fun FocusChip(label: String, remainingMillis: Long, onClick: () -> Unit, tint: Color = KairoColors.NeonCyan) {
+fun FocusChip(label: String, remainingMillis: Long, onClick: () -> Unit, tint: Color = KairoTheme.colors.primary) {
     AssistChip(
         onClick = onClick,
         leadingIcon = { Icon(Icons.Outlined.Timer, contentDescription = null, tint = tint) },

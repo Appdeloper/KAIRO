@@ -1,6 +1,7 @@
 package com.kairo.app.ui.focus
 
 import android.Manifest
+import com.kairo.app.ui.design.laneStyle
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -68,8 +69,7 @@ import com.kairo.app.data.local.FocusSession
 import com.kairo.app.domain.focus.ClockReading
 import com.kairo.app.domain.focus.FocusTiming
 import com.kairo.app.ui.containerFactory
-import com.kairo.app.ui.theme.KairoColors
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.util.parseHexColor
 
 /**
@@ -153,7 +153,7 @@ private fun FocusRoute(
         LaunchedEffect(Unit) { onClose() }
         return
     }
-    val roleColor = state.role?.let { parseHexColor(it.colorHex) } ?: KairoColors.NeonCyan
+    val roleColor = state.role?.let { laneStyle(it).color } ?: KairoTheme.colors.primary
 
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).safeDrawingPadding()) {
         when (mode) {
@@ -248,7 +248,7 @@ fun FocusSessionContent(
                 strokeCap = StrokeCap.Round,
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(formatCountdown(remainingMillis), fontSize = 56.sp, fontWeight = FontWeight.Bold)
+                Text(formatCountdown(remainingMillis), style = KairoTheme.numbers.large)
                 Text(
                     if (remainingMillis > 0) stringResource(R.string.focus_left) else stringResource(R.string.focus_time_up),
                     style = MaterialTheme.typography.labelLarge,

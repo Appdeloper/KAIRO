@@ -59,8 +59,7 @@ import com.kairo.app.ui.alarms.HealthRow
 import com.kairo.app.ui.alarms.formatInstant
 import com.kairo.app.ui.components.TimePickerDialog
 import com.kairo.app.ui.containerFactory
-import com.kairo.app.ui.theme.KairoColors
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.util.formatMinuteOfDay
 import java.time.Instant
 import java.time.LocalDate
@@ -156,7 +155,7 @@ private fun ShakeTestMeter(threshold: Float) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         LinearProgressIndicator(
             progress = { (magnitude / ShakeDetector.MAX_THRESHOLD).coerceIn(0f, 1f) },
-            color = if (magnitude >= threshold) KairoColors.NeonLime else MaterialTheme.colorScheme.primary,
+            color = if (magnitude >= threshold) KairoTheme.colors.success else MaterialTheme.colorScheme.primary,
             modifier = Modifier.fillMaxWidth(),
         )
         Text(

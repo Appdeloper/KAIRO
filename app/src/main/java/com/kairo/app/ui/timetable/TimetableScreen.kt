@@ -1,6 +1,7 @@
 package com.kairo.app.ui.timetable
 
 import androidx.compose.foundation.background
+import com.kairo.app.ui.design.laneStyle
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -45,7 +46,7 @@ import com.kairo.app.data.local.FixedBlock
 import com.kairo.app.ui.PreviewData
 import com.kairo.app.ui.containerFactory
 import com.kairo.app.ui.components.currentLocale
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.util.formatMinuteOfDay
 import com.kairo.app.util.parseHexColor
 import java.time.DayOfWeek
@@ -97,7 +98,7 @@ fun TimetableContent(
     ) { padding ->
         WeekGrid(
             blocks = state.blocks,
-            roleColors = state.roles.associate { it.id to parseHexColor(it.colorHex) },
+            roleColors = state.roles.associate { it.id to laneStyle(it).color },
             onEmptySlotTap = { day, minute -> editing = newBlock(day, minute) },
             onBlockTap = { editing = it },
             modifier = Modifier.padding(padding),

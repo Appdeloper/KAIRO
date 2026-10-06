@@ -9,7 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import org.robolectric.RuntimeEnvironment
 
 /**

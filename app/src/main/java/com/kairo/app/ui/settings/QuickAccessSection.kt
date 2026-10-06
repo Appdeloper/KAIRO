@@ -24,7 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kairo.app.R
 import com.kairo.app.service.BriefTileService
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 
 /**
  * Helps the user install the fallback entry points. On Android 13+ the system can show its own

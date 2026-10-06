@@ -39,7 +39,7 @@ import com.kairo.app.ui.PreviewData
 import com.kairo.app.ui.components.RolePicker
 import com.kairo.app.ui.components.TimePickerDialog
 import com.kairo.app.ui.components.currentLocale
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.util.formatMinuteOfDay
 import java.time.DayOfWeek
 import java.time.format.TextStyle

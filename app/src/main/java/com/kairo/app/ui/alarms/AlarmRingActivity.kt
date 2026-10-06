@@ -24,7 +24,7 @@ import com.kairo.app.alarm.RingState
 import com.kairo.app.alarm.isUserUnlocked
 import com.kairo.app.domain.brief.Upcoming
 import com.kairo.app.ui.briefing.BriefingActivity
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.ui.today.DayTimelineSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull

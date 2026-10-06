@@ -52,7 +52,7 @@ import com.kairo.app.data.local.AlarmType
 import com.kairo.app.data.local.FixedBlock
 import com.kairo.app.ui.PreviewData
 import com.kairo.app.ui.components.TimePickerDialog
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.util.formatMinuteOfDay
 import kotlin.math.roundToInt
 

@@ -38,8 +38,7 @@ import com.kairo.app.R
 import com.kairo.app.alarm.AlarmHealth
 import com.kairo.app.alarm.AlarmHealthChecker
 import com.kairo.app.alarm.HealthIssue
-import com.kairo.app.ui.theme.KairoColors
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -86,7 +85,7 @@ fun AlarmPermissionBanner(health: AlarmHealth, onFix: (HealthIssue) -> Unit, mod
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.WarningAmber, contentDescription = null, tint = KairoColors.NeonMagenta)
+                Icon(Icons.Outlined.WarningAmber, contentDescription = null, tint = KairoTheme.colors.warning)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.alarm_banner_title), style = MaterialTheme.typography.titleSmall)
             }
@@ -129,7 +128,7 @@ internal fun HealthRow(label: Int, ok: Boolean, onFix: () -> Unit) {
         Icon(
             if (ok) Icons.Outlined.CheckCircle else Icons.Outlined.WarningAmber,
             contentDescription = stringResource(if (ok) R.string.alarm_health_ok else R.string.alarm_health_problem),
-            tint = if (ok) KairoColors.NeonLime else KairoColors.NeonMagenta,
+            tint = if (ok) KairoTheme.colors.success else KairoTheme.colors.warning,
         )
         Spacer(Modifier.width(10.dp))
         Text(stringResource(label), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))

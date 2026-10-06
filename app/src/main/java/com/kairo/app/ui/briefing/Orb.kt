@@ -28,8 +28,8 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.kairo.app.ui.theme.KairoColors
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.Palette
+import com.kairo.app.ui.design.KairoTheme
 import kotlin.math.sin
 
 enum class OrbState { IDLE, LISTENING, THINKING, DONE }
@@ -108,7 +108,7 @@ private fun DrawScope.drawFallbackOrb(p: OrbParams) {
     val radius = base * (1f + 0.05f * sin(p.time * 1.2f) * p.breath + 0.25f * p.level + 0.3f * p.bloom)
     drawCircle(
         brush = Brush.radialGradient(
-            0f to KairoColors.NeonCyan.copy(alpha = 0.35f),
+            0f to Palette.Cyan.copy(alpha = 0.35f),
             1f to Color.Transparent,
             center = center,
             radius = radius * 1.9f,
@@ -117,9 +117,9 @@ private fun DrawScope.drawFallbackOrb(p: OrbParams) {
     )
     drawCircle(
         brush = Brush.radialGradient(
-            0f to Color.White,
-            0.35f to KairoColors.NeonCyan,
-            1f to KairoColors.NeonMagenta,
+            0f to Palette.SoftWhite,
+            0.35f to Palette.Cyan,
+            1f to Palette.Blue,
             center = center,
             radius = radius,
         ),
@@ -128,7 +128,7 @@ private fun DrawScope.drawFallbackOrb(p: OrbParams) {
     if (p.swirl > 0.01f) {
         rotate(degrees = p.time * 240f) {
             drawArc(
-                brush = Brush.sweepGradient(listOf(Color.Transparent, KairoColors.NeonLime.copy(alpha = p.swirl), Color.Transparent), center),
+                brush = Brush.sweepGradient(listOf(Color.Transparent, Palette.Blue.copy(alpha = p.swirl), Color.Transparent), center),
                 startAngle = 0f,
                 sweepAngle = 300f,
                 useCenter = false,
@@ -159,8 +159,8 @@ private class OrbShader private constructor(private val shader: RuntimeShader) {
         fun createOrNull(): OrbShader? = try {
             OrbShader(
                 RuntimeShader(ORB_AGSL).apply {
-                    setColorUniform("coreColor", KairoColors.NeonCyan.toArgb())
-                    setColorUniform("edgeColor", KairoColors.NeonMagenta.toArgb())
+                    setColorUniform("coreColor", Palette.Cyan.toArgb())
+                    setColorUniform("edgeColor", Palette.Blue.toArgb())
                 },
             )
         } catch (e: IllegalArgumentException) {

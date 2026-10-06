@@ -43,8 +43,7 @@ import androidx.compose.ui.unit.sp
 import com.kairo.app.R
 import com.kairo.app.ui.briefing.Orb
 import com.kairo.app.ui.briefing.OrbState
-import com.kairo.app.ui.theme.KairoColors
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -65,7 +64,7 @@ fun AlarmRingScreen(
     Column(
         modifier
             .fillMaxSize()
-            .background(KairoColors.Background)
+            .background(KairoTheme.colors.background)
             .safeDrawingPadding()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -75,14 +74,14 @@ fun AlarmRingScreen(
             Spacer(Modifier.height(32.dp))
             Text(
                 clock.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
-                fontSize = 72.sp,
+                style = KairoTheme.numbers.hero,
                 fontWeight = FontWeight.Light,
                 color = MaterialTheme.colorScheme.onBackground,
             )
             Text(
                 label.ifBlank { stringResource(R.string.alarm_default_label) },
                 style = MaterialTheme.typography.headlineSmall,
-                color = KairoColors.NeonCyan,
+                color = KairoTheme.colors.primary,
                 textAlign = TextAlign.Center,
             )
             firstItem?.let {
@@ -131,7 +130,7 @@ private fun SlideToDismiss(onDismiss: () -> Unit) {
                 .padding(4.dp)
                 .offset { IntOffset(offset.value.roundToInt(), 0) }
                 .size(thumb)
-                .background(KairoColors.NeonCyan, CircleShape)
+                .background(KairoTheme.colors.primary, CircleShape)
                 .pointerInput(maxPx) {
                     detectHorizontalDragGestures(
                         onDragEnd = {
@@ -148,7 +147,7 @@ private fun SlideToDismiss(onDismiss: () -> Unit) {
                 },
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = KairoColors.Background)
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = KairoTheme.colors.onPrimary)
         }
     }
 }

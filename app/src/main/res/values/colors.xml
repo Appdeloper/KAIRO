@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="kairo_background">#FF07070B</color>
-    <color name="kairo_neon_cyan">#FF00F0FF</color>
-    <color name="kairo_neon_magenta">#FFFF2BD6</color>
+    <!-- Mirrors ui/design/KairoColors.kt for places Compose can't reach (window background, widget, splash). -->
+    <color name="kairo_background">#FF05070F</color>
+    <color name="kairo_surface1">#FF0C1222</color>
+    <color name="kairo_surface2">#FF121A30</color>
+    <color name="kairo_outline">#FF2A3556</color>
+    <color name="kairo_primary">#FF00E5FF</color>
+    <color name="kairo_primary_end">#FF4D7CFF</color>
+    <color name="kairo_text_primary">#FFF2F8FF</color>
+    <color name="kairo_text_secondary">#FFAAB6D3</color>
+    <color name="kairo_moment">#FFFFB020</color>
     <!-- Extra minutes from Extend, shown after the role-coloured planned part of the focus progress bar. -->
-    <color name="focus_extension">#FFFFC857</color>
+    <color name="focus_extension">#FF4D7CFF</color>
 </resources>

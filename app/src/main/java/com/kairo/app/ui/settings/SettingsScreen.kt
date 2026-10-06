@@ -43,7 +43,7 @@ import com.kairo.app.ui.components.RoleDot
 import com.kairo.app.ui.containerFactory
 import com.kairo.app.ui.onboarding.ProfileForm
 import com.kairo.app.ui.onboarding.ProfileViewModel
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 
 @Composable
 fun SettingsScreen(

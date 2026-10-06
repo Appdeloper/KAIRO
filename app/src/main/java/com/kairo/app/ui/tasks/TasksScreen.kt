@@ -1,6 +1,7 @@
 package com.kairo.app.ui.tasks
 
 import androidx.compose.foundation.layout.Arrangement
+import com.kairo.app.ui.design.laneStyle
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -43,7 +44,7 @@ import com.kairo.app.ui.PreviewData
 import com.kairo.app.ui.components.RoleDot
 import com.kairo.app.ui.components.TimePickerDialog
 import com.kairo.app.ui.containerFactory
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.util.parseHexColor
 import java.time.LocalDate
 import java.time.LocalTime
@@ -146,7 +147,7 @@ private fun SectionTitle(text: String) {
 
 @Composable
 private fun TaskCard(task: Task, role: Role?, onToday: () -> Unit, onToggleDone: () -> Unit) {
-    val roleColor = role?.let { parseHexColor(it.colorHex) } ?: MaterialTheme.colorScheme.outline
+    val roleColor = laneStyle(role).color
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),

@@ -41,7 +41,7 @@ import com.kairo.app.R
 import com.kairo.app.data.local.Role
 import com.kairo.app.ui.PreviewData
 import com.kairo.app.ui.components.RolePicker
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle

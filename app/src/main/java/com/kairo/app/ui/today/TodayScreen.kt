@@ -1,6 +1,7 @@
 package com.kairo.app.ui.today
 
 import androidx.compose.foundation.background
+import com.kairo.app.ui.design.laneStyle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -70,14 +71,13 @@ import com.kairo.app.ui.shake.ShakeStoppedCard
 import com.kairo.app.ui.alarms.formatInstant
 import com.kairo.app.ui.alarms.rememberAlarmHealth
 import com.kairo.app.ui.alarms.rememberHealthFixer
-import com.kairo.app.ui.theme.KairoColors
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material3.AssistChip
 import com.kairo.app.ui.briefing.BriefingActivity
 import com.kairo.app.ui.command.CommandFeedbackEffect
 import com.kairo.app.ui.components.RoleDot
 import com.kairo.app.ui.containerFactory
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.ui.focus.FocusActivity
 import com.kairo.app.ui.focus.FocusChip
 import com.kairo.app.ui.focus.FocusLauncherViewModel
@@ -292,7 +292,7 @@ private fun ProgressCard(state: TodayUiState) {
 @Composable
 private fun TimelineRow(entry: TimelineEntry, onTaskClick: (Task) -> Unit, onEntryClick: (TimelineEntry) -> Unit) {
     val context = LocalContext.current
-    val roleColor = entry.role?.let { parseHexColor(it.colorHex) } ?: Color.Gray
+    val roleColor = laneStyle(entry.role).color
     val start = entry.startMinute
     val end = entry.endMinute
     val timeText = if (start != null && end != null) {
@@ -402,7 +402,7 @@ private fun TodayContentEmptyPreview() {
 fun NextAlarmChip(label: String, at: java.time.Instant, onClick: () -> Unit) {
     AssistChip(
         onClick = onClick,
-        leadingIcon = { Icon(Icons.Outlined.Alarm, contentDescription = null, tint = KairoColors.NeonCyan) },
+        leadingIcon = { Icon(Icons.Outlined.Alarm, contentDescription = null, tint = KairoTheme.colors.primary) },
         label = {
             Text(stringResource(R.string.today_next_alarm, formatInstant(at), label.ifBlank { stringResource(R.string.alarm_default_label) }))
         },

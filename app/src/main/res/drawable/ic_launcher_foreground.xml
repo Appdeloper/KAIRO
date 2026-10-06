@@ -6,11 +6,11 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:strokeColor="@color/kairo_neon_cyan"
+        android:strokeColor="@color/kairo_primary"
         android:strokeWidth="5"
         android:fillColor="#00000000"
         android:pathData="M54,30a24,24 0,1 1,0 48a24,24 0,1 1,0 -48z" />
     <path
-        android:fillColor="@color/kairo_neon_magenta"
+        android:fillColor="@color/kairo_primary_end"
         android:pathData="M54,46a8,8 0,1 1,0 16a8,8 0,1 1,0 -16z" />
 </vector>

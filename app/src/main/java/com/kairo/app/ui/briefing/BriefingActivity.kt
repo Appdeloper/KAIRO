@@ -30,7 +30,7 @@ import com.kairo.app.ai.speech.SpeechError
 import com.kairo.app.ai.speech.SpeechProvider
 import com.kairo.app.ui.containerFactory
 import com.kairo.app.ui.command.CommandFeedbackEffect
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.ui.today.DayTimelineSource
 import com.kairo.app.ui.today.PlanDiffSheet
 import com.kairo.app.R

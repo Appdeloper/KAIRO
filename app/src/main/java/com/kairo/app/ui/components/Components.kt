@@ -1,6 +1,7 @@
 package com.kairo.app.ui.components
 
 import androidx.compose.foundation.background
+import com.kairo.app.ui.design.laneStyle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -32,7 +33,7 @@ fun RoleDot(role: Role?, modifier: Modifier = Modifier, size: Dp = 10.dp) {
     Box(
         modifier
             .size(size)
-            .background(role?.let { parseHexColor(it.colorHex) } ?: Color.Gray, CircleShape),
+            .background(laneStyle(role).color, CircleShape),
     )
 }
 
@@ -41,7 +42,7 @@ fun RoleDot(role: Role?, modifier: Modifier = Modifier, size: Dp = 10.dp) {
 fun RolePicker(roles: List<Role>, selectedId: Long?, onSelect: (Long) -> Unit, modifier: Modifier = Modifier) {
     FlowRow(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         roles.forEach { role ->
-            val color = parseHexColor(role.colorHex)
+            val color = laneStyle(role).color
             FilterChip(
                 selected = role.id == selectedId,
                 onClick = { onSelect(role.id) },

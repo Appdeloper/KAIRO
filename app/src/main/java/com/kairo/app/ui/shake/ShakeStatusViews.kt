@@ -31,7 +31,7 @@ import com.kairo.app.service.shake.ShakeControl
 import com.kairo.app.service.shake.ShakeHealthPolicy
 import com.kairo.app.service.shake.ShakeService
 import com.kairo.app.service.shake.ShakeStatus
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import kotlinx.coroutines.launch
 
 /** Shake health recomputed on every resume, from the heartbeat and whether the service is alive here. */

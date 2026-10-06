@@ -50,7 +50,7 @@ import com.kairo.app.service.focus.FocusDnd
 import com.kairo.app.service.focus.FocusPromotion
 import com.kairo.app.service.focus.PromotionStatus
 import com.kairo.app.ui.containerFactory
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.domain.focus.FocusDurations
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

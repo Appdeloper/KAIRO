@@ -33,8 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kairo.app.R
 import com.kairo.app.ai.AiSettings
-import com.kairo.app.ui.theme.KairoColors
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 
 /** Stateless: the caller owns the saved value; edits stay local until Save. */
 @Composable
@@ -99,8 +98,8 @@ fun AiSettingsSection(saved: AiSettings, onSave: (AiSettings) -> Unit, modifier:
 private fun AiStatusCard(settings: AiSettings) {
     val (text, color) = when {
         !settings.enabled -> stringResource(R.string.settings_ai_status_off) to MaterialTheme.colorScheme.onSurfaceVariant
-        !settings.isSetUp -> stringResource(R.string.settings_ai_status_not_set_up) to KairoColors.NeonMagenta
-        else -> stringResource(R.string.settings_ai_status_ready) to KairoColors.NeonLime
+        !settings.isSetUp -> stringResource(R.string.settings_ai_status_not_set_up) to KairoTheme.colors.warning
+        else -> stringResource(R.string.settings_ai_status_ready) to KairoTheme.colors.success
     }
     Card(
         modifier = Modifier.fillMaxWidth(),

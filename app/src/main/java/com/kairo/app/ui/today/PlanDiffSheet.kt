@@ -43,8 +43,7 @@ import com.kairo.app.domain.plan.PlanDiff
 import com.kairo.app.domain.plan.Reason
 import com.kairo.app.domain.plan.RemovedItem
 import com.kairo.app.ui.PreviewData
-import com.kairo.app.ui.theme.KairoColors
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.util.formatMinuteOfDay
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -114,28 +113,28 @@ private fun AgendaList(agenda: Agenda) {
 @Composable
 private fun ChangeRow(change: Change, today: LocalDate) {
     when (change) {
-        is Change.Added -> LineItem(Icons.Outlined.AddCircleOutline, KairoColors.NeonLime, stringResource(R.string.change_added, change.task.title, slotLabel(change.task, today)))
+        is Change.Added -> LineItem(Icons.Outlined.AddCircleOutline, KairoTheme.colors.success, stringResource(R.string.change_added, change.task.title, slotLabel(change.task, today)))
         is Change.Moved -> {
             val text = if (change.before.scheduledStartMinute == null || change.before.scheduledEpochDay == null) {
                 stringResource(R.string.change_scheduled, change.after.title, slotLabel(change.after, today))
             } else {
                 stringResource(R.string.change_moved, change.after.title, slotLabel(change.before, today), slotLabel(change.after, today))
             }
-            LineItem(Icons.Outlined.Schedule, KairoColors.NeonCyan, text)
+            LineItem(Icons.Outlined.Schedule, KairoTheme.colors.primary, text)
         }
         is Change.Removed -> when (val item = change.item) {
             is RemovedItem.TaskUnscheduled -> LineItem(
-                Icons.Outlined.RemoveCircleOutline, KairoColors.NeonMagenta,
+                Icons.Outlined.RemoveCircleOutline, KairoTheme.colors.textTertiary,
                 stringResource(R.string.change_unscheduled, item.before.title, item.before.scheduledEpochDay?.let { dateLabel(LocalDate.ofEpochDay(it), today) }.orEmpty()),
             )
-            is RemovedItem.TaskCompleted -> LineItem(Icons.Outlined.CheckCircle, KairoColors.NeonLime, stringResource(R.string.change_completed, item.before.title))
+            is RemovedItem.TaskCompleted -> LineItem(Icons.Outlined.CheckCircle, KairoTheme.colors.success, stringResource(R.string.change_completed, item.before.title))
             is RemovedItem.BlockSkipped -> LineItem(
-                Icons.Outlined.RemoveCircleOutline, KairoColors.NeonMagenta,
+                Icons.Outlined.RemoveCircleOutline, KairoTheme.colors.textTertiary,
                 stringResource(R.string.change_block_skipped, item.block.title, dateLabel(item.date, today)),
             )
         }
         is Change.Conflict -> LineItem(Icons.Outlined.Block, MaterialTheme.colorScheme.error, reasonText(change.reason, today))
-        is Change.Warning -> LineItem(Icons.Outlined.WarningAmber, KairoColors.NeonMagenta, reasonText(change.reason, today))
+        is Change.Warning -> LineItem(Icons.Outlined.WarningAmber, KairoTheme.colors.warning, reasonText(change.reason, today))
     }
 }
 

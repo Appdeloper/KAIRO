@@ -42,7 +42,7 @@ import com.kairo.app.domain.focus.FocusDurations
 import com.kairo.app.domain.focus.FocusRules
 import com.kairo.app.ui.PreviewData
 import com.kairo.app.ui.components.RoleDot
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 
 /** What a focus session is about: a task (linked, gets the next step) or a lecture block (label only). */
 data class FocusTarget(val taskId: Long?, val title: String, val role: Role?, val startMinute: Int?, val endMinute: Int?) {

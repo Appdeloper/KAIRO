@@ -19,7 +19,7 @@ import com.kairo.app.R
 import com.kairo.app.alarm.AlarmHealth
 import com.kairo.app.alarm.HealthIssue
 import com.kairo.app.ui.alarms.AlarmHealthCard
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 
 /** Alarm health at a glance plus a one-minute test alarm, to prove ringing works on this phone. */
 @Composable

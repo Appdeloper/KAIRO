@@ -46,7 +46,7 @@ import com.kairo.app.data.local.Alarm
 import com.kairo.app.data.local.AlarmType
 import com.kairo.app.ui.PreviewData
 import com.kairo.app.ui.containerFactory
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.util.formatMinuteOfDay
 import java.time.DayOfWeek
 import java.time.format.TextStyle

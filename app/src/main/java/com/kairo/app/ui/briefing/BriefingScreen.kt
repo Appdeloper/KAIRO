@@ -67,8 +67,7 @@ import com.kairo.app.domain.brief.Brief
 import com.kairo.app.domain.brief.BriefSource
 import com.kairo.app.ui.PreviewData
 import com.kairo.app.ui.components.RoleDot
-import com.kairo.app.ui.theme.KairoColors
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 import com.kairo.app.util.formatMinuteOfDay
 
 /** Everything the input row needs; grouped so the content composable stays readable. */
@@ -102,7 +101,7 @@ fun BriefingContent(
         modifier
             .fillMaxSize()
             // Translucent window: a deep scrim keeps text readable over whatever is behind it.
-            .background(KairoColors.Background.copy(alpha = SCRIM_ALPHA))
+            .background(KairoTheme.colors.background.copy(alpha = SCRIM_ALPHA))
             .safeDrawingPadding(),
     ) {
         Column(Modifier.fillMaxSize()) {
@@ -198,7 +197,7 @@ private fun BestGapChip(gap: BestGap) {
     AssistChip(
         onClick = {},
         label = { Text(stringResource(R.string.brief_best_gap, range, gap.suggestion)) },
-        leadingIcon = { Icon(Icons.Outlined.Schedule, contentDescription = null, tint = KairoColors.NeonLime) },
+        leadingIcon = { Icon(Icons.Outlined.Schedule, contentDescription = null, tint = KairoTheme.colors.success) },
         colors = AssistChipDefaults.assistChipColors(labelColor = MaterialTheme.colorScheme.onSurface),
     )
 }

@@ -33,7 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import com.kairo.app.data.prefs.UserPrefs
 import com.kairo.app.ui.containerFactory
-import com.kairo.app.ui.theme.KairoTheme
+import com.kairo.app.ui.design.KairoTheme
 
 @Composable
 fun OnboardingScreen(

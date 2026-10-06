@@ -10,7 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import com.kairo.app.ui.theme.KairoColors
+import com.kairo.app.ui.design.Palette
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -40,7 +40,7 @@ object ParticleField {
     private const val TWO_PI = (Math.PI * 2).toFloat()
 }
 
-private val palette = listOf(KairoColors.NeonCyan, KairoColors.NeonMagenta, KairoColors.NeonLime)
+private val palette = listOf(Palette.Cyan, Palette.Blue, Palette.SoftWhite)
 
 /**
  * Plays a burst each time [trigger] changes (0 = never). Only animates while [running]; if the
