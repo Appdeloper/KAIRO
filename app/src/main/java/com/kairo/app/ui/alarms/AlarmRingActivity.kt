@@ -1,5 +1,7 @@
 package com.kairo.app.ui.alarms
 
+import com.kairo.app.util.beta.BetaEvent
+import com.kairo.app.util.beta.Events
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
@@ -56,6 +58,7 @@ class AlarmRingActivity : ComponentActivity() {
             override fun handleOnBackPressed() = Unit
         })
         closeWhenRingingEnds()
+        if (savedInstanceState == null) Events.record(BetaEvent.ALARM_RING_SHOWN)
 
         setContent {
             KairoTheme {
@@ -67,8 +70,14 @@ class AlarmRingActivity : ComponentActivity() {
                     firstItem = rememberFirstItem(),
                     snoozeMinutes = plan?.snoozeMinutes ?: 0,
                     snoozesLeft = plan?.let(RingPolicy::snoozesLeft) ?: 0,
-                    onSnooze = { startService(AlarmRingService.snoozeIntent(this)) },
-                    onDismiss = ::dismiss,
+                    onSnooze = {
+                        Events.record(BetaEvent.ALARM_SNOOZED)
+                        startService(AlarmRingService.snoozeIntent(this))
+                    },
+                    onDismiss = {
+                        Events.record(BetaEvent.ALARM_DISMISSED)
+                        dismiss()
+                    },
                 )
             }
         }

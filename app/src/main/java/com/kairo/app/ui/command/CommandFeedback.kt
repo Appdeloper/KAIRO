@@ -1,5 +1,7 @@
 package com.kairo.app.ui.command
 
+import com.kairo.app.util.beta.BetaEvent
+import com.kairo.app.util.beta.Events
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -57,9 +59,13 @@ fun CommandFeedbackEffect(
         events.collect { event ->
             when (event) {
                 is CommandEvent.Applied -> {
+                    Events.record(BetaEvent.PLAN_APPLIED)
                     applied()
                     val result = snackbar.showSnackbar(messages.applied, actionLabel = messages.undo, duration = SnackbarDuration.Long)
-                    if (result == SnackbarResult.ActionPerformed) undo(event.applied)
+                    if (result == SnackbarResult.ActionPerformed) {
+                        Events.record(BetaEvent.PLAN_UNDONE)
+                        undo(event.applied)
+                    }
                 }
                 CommandEvent.NotUnderstood -> snackbar.showSnackbar(messages.notUnderstood)
                 is CommandEvent.AiUnclear -> snackbar.showSnackbar(

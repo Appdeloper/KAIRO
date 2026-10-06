@@ -1,5 +1,7 @@
 package com.kairo.app.ui.focus
 
+import com.kairo.app.util.beta.Events
+import com.kairo.app.util.beta.BetaEvent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -71,6 +73,7 @@ fun FocusStartSheet(
 ) {
     val context = LocalContext.current
     val notificationsOff = remember { !NotificationManagerCompat.from(context).areNotificationsEnabled() }
+    androidx.compose.runtime.LaunchedEffect(Unit) { Events.record(BetaEvent.FOCUS_SHEET_OPEN) }
     KairoBottomSheet(onDismissRequest = onDismiss) {
         FocusStartContent(
             target = target,

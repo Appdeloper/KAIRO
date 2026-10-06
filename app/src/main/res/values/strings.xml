@@ -324,7 +324,10 @@
     <string name="today_nothing_left">You\'re done for today</string>
     <string name="today_free_until_next">Nothing on right now</string>
     <string name="today_next_line">Next: %1$s in %2$s</string>
-    <string name="today_progress_cd">%1$d of %2$d tasks done</string>
+    <plurals name="today_progress_cd">
+        <item quantity="one">%1$d of %2$d task done</item>
+        <item quantity="other">%1$d of %2$d tasks done</item>
+    </plurals>
     <string name="today_focusing_on">Focusing on</string>
     <string name="timeline_focusing">Focusing · %1$s left</string>
     <string name="timeline_done">Done</string>
@@ -473,4 +476,20 @@
     <string name="widget_in_minutes">in %1$d min</string>
     <string name="widget_in_hours">in %1$d h %2$d min</string>
     <string name="settings_lanes">Your lanes</string>
+    <string name="crash_title">KAIRO closed unexpectedly</string>
+    <string name="crash_body">Sorry about that. Want to share the crash report? It has the app version, your phone model and where the code failed. Nothing you typed or planned is in it.</string>
+    <string name="crash_share">Share report</string>
+    <string name="crash_dismiss">Dismiss</string>
+    <string name="crash_subject">KAIRO %1$s crash report</string>
+    <string name="crash_share_title">Share crash report</string>
+    <string name="whats_new_title">What\'s new</string>
+    <string name="whats_new_done">Got it</string>
+    <string name="feedback_send">Send feedback</string>
+    <string name="feedback_send_sub">Opens your share menu with the app version, phone model and recent app events. Never your tasks or names.</string>
+    <string name="feedback_subject">KAIRO %1$s feedback</string>
+    <string name="feedback_share_title">Send feedback</string>
+    <string name="feedback_prompt">What happened, and what did you expect? (Write here.)</string>
+    <string name="settings_whats_new_sub">See what changed in this version.</string>
+    <string name="offline_title">You\'re offline</string>
+    <string name="offline_body">KAIRO still understands you on the phone. The cloud AI comes back when you reconnect.</string>
 </resources>

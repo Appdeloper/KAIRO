@@ -15,8 +15,12 @@ android {
         applicationId = "com.kairo.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        // CI sets GITHUB_RUN_NUMBER, so every published APK has a higher versionCode and installs as
+        // an update. Local builds are 1.
+        versionCode = providers.environmentVariable("GITHUB_RUN_NUMBER").map(String::toInt).getOrElse(1)
+        versionName = "0.1.0-beta"
+        // Shown in Settings → About and in feedback, so a report can be matched to its exact build.
+        buildConfigField("String", "GIT_SHA", "\"${providers.environmentVariable("GITHUB_SHA").map { it.take(7) }.getOrElse("local")}\"")
     }
 
     // One fixed debug key for every machine, CI included. Without it each GitHub Actions runner
@@ -46,6 +50,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     sourceSets {

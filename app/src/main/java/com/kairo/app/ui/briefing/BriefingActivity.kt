@@ -1,5 +1,7 @@
 package com.kairo.app.ui.briefing
 
+import com.kairo.app.util.beta.BetaEvent
+import com.kairo.app.util.beta.Events
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -73,6 +75,7 @@ class BriefingActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
         stopAlarmIfAsked(intent)
+        if (savedInstanceState == null) Events.record(BetaEvent.BRIEFING_OPEN)
         // Only a fresh open from the orb button listens straight away; a rotation must not re-trigger it.
         listenOnOpen = savedInstanceState == null && intent.getBooleanExtra(EXTRA_LISTEN, false)
         speech = AndroidSpeechProvider(this)
@@ -146,6 +149,7 @@ private fun BriefingRoute(viewModel: BriefingViewModel, speech: SpeechProvider, 
         if (granted) speech.start() else micRefused = true
     }
     fun onMic() {
+        if (!listening) Events.record(BetaEvent.VOICE_START)
         when {
             listening -> speech.stop()
             ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED -> speech.start()
@@ -174,7 +178,10 @@ private fun BriefingRoute(viewModel: BriefingViewModel, speech: SpeechProvider, 
     val speaking by speaker.speaking.collectAsStateWithLifecycle()
 
     BriefingContent(
-        topNotice = { ShakeStoppedCard(Modifier.padding(horizontal = com.kairo.app.ui.design.Spacing.lg)) },
+        topNotice = {
+            com.kairo.app.ui.command.OfflineNotice(Modifier.padding(horizontal = com.kairo.app.ui.design.Spacing.lg))
+            ShakeStoppedCard(Modifier.padding(horizontal = com.kairo.app.ui.design.Spacing.lg))
+        },
         state = state,
         // "Speaking" comes from the TTS engine, not the view model; it shows only while idle otherwise.
         orbState = if (speaking && orbState == OrbState.IDLE) OrbState.SPEAKING else orbState,
@@ -186,6 +193,7 @@ private fun BriefingRoute(viewModel: BriefingViewModel, speech: SpeechProvider, 
             text = text,
             onTextChange = { text = it },
             onSend = {
+                Events.record(BetaEvent.COMMAND_SENT)
                 viewModel.submitText(text)
                 text = ""
             },

@@ -4,6 +4,8 @@
 
     <!-- Only for the user's own Cloudflare Worker (cloud parsing). Mic, alarms and notifications come later. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Only to tell the user they are offline (cloud AI falls back to the phone). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Requested at runtime only inside BriefingActivity, never from a service (rule 6). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 

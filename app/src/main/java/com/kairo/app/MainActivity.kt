@@ -1,5 +1,7 @@
 package com.kairo.app
 
+import com.kairo.app.util.beta.BetaEvent
+import com.kairo.app.util.beta.Events
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -27,6 +29,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         handleRearm(intent)
+        if (savedInstanceState == null) Events.record(BetaEvent.APP_OPEN)
         // Force-stop cancels our alarms: on every cold open, resume or close a stuck focus session.
         if (savedInstanceState == null) lifecycleScope.launch { (application as KairoApp).container.focusEngine.reconcile() }
         setContent {

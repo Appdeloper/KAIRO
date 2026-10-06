@@ -1,5 +1,7 @@
 package com.kairo.app.ui.onboarding
 
+import com.kairo.app.util.beta.BetaEvent
+import com.kairo.app.util.beta.Events
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -133,7 +135,12 @@ fun OnboardingScreen(
         onHide = viewModel::setHidden,
         onFix = fix,
         onAllowMic = { micPrompt.launch(Manifest.permission.RECORD_AUDIO) },
-        onFinish = { name, wake, sleep, alarm, sample -> viewModel.finish(name, wake, sleep, alarm, sample, wakeLabel) },
+        onFinish = { name, wake, sleep, alarm, sample ->
+            Events.record(BetaEvent.ONBOARDING_DONE)
+            // A new user has just seen the tour; "What's new" is for people updating.
+            com.kairo.app.util.beta.BetaSupport.markWhatsNewSeen(context)
+            viewModel.finish(name, wake, sleep, alarm, sample, wakeLabel)
+        },
     )
 }
 

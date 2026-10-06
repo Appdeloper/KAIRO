@@ -33,6 +33,8 @@ class KairoApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // First, so a crash anywhere below is still saved for the next launch.
+        com.kairo.app.util.beta.BetaSupport.init(this)
         container = AppContainer(this)
         AlarmNotifications.createChannels(this)
         ShakeNotifications.createChannels(this)

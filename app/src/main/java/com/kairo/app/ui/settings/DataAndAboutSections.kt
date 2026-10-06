@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Feedback
+import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -75,7 +77,7 @@ fun shareExport(context: android.content.Context, json: String) {
 
 /** Logo, version and build, and where to send feedback. */
 @Composable
-fun AboutSection(versionLabel: String, extra: @Composable () -> Unit = {}) {
+fun AboutSection(versionLabel: String, onFeedback: () -> Unit = {}, onWhatsNew: () -> Unit = {}, extra: @Composable () -> Unit = {}) {
     val colors = KairoTheme.colors
     GlassCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -87,19 +89,10 @@ fun AboutSection(versionLabel: String, extra: @Composable () -> Unit = {}) {
             }
         }
         Text(stringResource(R.string.settings_about_body), style = KairoTheme.type.bodySmall, color = colors.textSecondary)
+        ListRow(stringResource(R.string.feedback_send), subtitle = stringResource(R.string.feedback_send_sub), icon = Icons.Outlined.Feedback, onClick = onFeedback)
+        ListRow(stringResource(R.string.whats_new_title), subtitle = stringResource(R.string.settings_whats_new_sub), icon = Icons.Outlined.NewReleases, onClick = onWhatsNew)
         extra()
         Text(stringResource(R.string.settings_fonts_license), style = KairoTheme.type.bodySmall, color = colors.textTertiary)
-    }
-}
-
-/** "0.1.0-beta (12)" from the installed package. */
-@Composable
-fun rememberVersionLabel(): String {
-    val context = LocalContext.current
-    return androidx.compose.runtime.remember(context) {
-        val info = context.packageManager.getPackageInfo(context.packageName, 0)
-        val code = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) info.longVersionCode else @Suppress("DEPRECATION") info.versionCode.toLong()
-        "${info.versionName} ($code)"
     }
 }
 

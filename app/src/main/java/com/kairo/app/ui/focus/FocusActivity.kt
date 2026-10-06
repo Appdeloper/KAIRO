@@ -1,5 +1,7 @@
 package com.kairo.app.ui.focus
 
+import com.kairo.app.util.beta.BetaEvent
+import com.kairo.app.util.beta.Events
 import android.Manifest
 import com.kairo.app.ui.design.laneStyle
 import android.content.Context
@@ -103,6 +105,7 @@ class FocusActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) Events.record(BetaEvent.FOCUS_SCREEN_OPEN)
         speech = AndroidSpeechProvider(this)
         requestedMode = modeOf(intent)
         val sessionId = intent.getLongExtra(EXTRA_SESSION_ID, -1)

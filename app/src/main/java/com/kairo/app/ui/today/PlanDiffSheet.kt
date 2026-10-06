@@ -1,5 +1,7 @@
 package com.kairo.app.ui.today
 
+import com.kairo.app.util.beta.BetaEvent
+import com.kairo.app.util.beta.Events
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -63,8 +65,12 @@ import java.time.format.FormatStyle
 /** Rule 3: every AI- or command-made change is previewed here before anything is written. */
 @Composable
 fun PlanDiffSheet(diff: PlanDiff, today: LocalDate, onApply: () -> Unit, onCancel: () -> Unit) {
-    KairoBottomSheet(onDismissRequest = onCancel) {
-        PlanDiffContent(diff, today, onApply, onCancel)
+    val cancel = {
+        Events.record(BetaEvent.PLAN_CANCELLED)
+        onCancel()
+    }
+    KairoBottomSheet(onDismissRequest = cancel) {
+        PlanDiffContent(diff, today, onApply, cancel)
     }
 }
 

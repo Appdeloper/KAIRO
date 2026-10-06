@@ -1,0 +1,8 @@
+## 0.1.0-beta
+- A fresh new look: a calm dark theme, the KAIRO orb front and centre, and colours for each lane.
+- Four tabs: Today, Plan, Alarms and Settings. Tap the orb in the middle to talk to KAIRO.
+- Plan shows your timetable and tasks together. Swipe a task right when it's done, left to drop it.
+- Every change KAIRO suggests is shown first. Apply it or cancel, and undo any time.
+- Alarms show when the next one rings and what could stop it, with a fix for each.
+- New: load a sample week to explore, export your data, or reset everything.
+- New: if KAIRO ever closes unexpectedly, you can send us the report on the next launch.

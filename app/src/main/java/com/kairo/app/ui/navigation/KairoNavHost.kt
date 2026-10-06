@@ -1,5 +1,8 @@
 package com.kairo.app.ui.navigation
 
+import com.kairo.app.ui.beta.BetaPrompts
+import com.kairo.app.util.beta.Events
+import com.kairo.app.util.beta.BetaEvent
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -116,11 +119,15 @@ private fun MainShell() {
         bottomBar = {
             KairoBottomBar(
                 current = backStackEntry?.destination,
-                onSelect = navController::navigateToTab,
+                onSelect = { tab ->
+                    Events.record(BetaEvent.valueOf("TAB_${tab.name}"))
+                    navController.navigateToTab(tab)
+                },
                 onOrb = { context.startActivity(BriefingActivity.voiceIntent(context)) },
             )
         },
     ) { padding ->
+        BetaPrompts()
         NavHost(
             navController = navController,
             startDestination = TopLevelDestination.TODAY.route,

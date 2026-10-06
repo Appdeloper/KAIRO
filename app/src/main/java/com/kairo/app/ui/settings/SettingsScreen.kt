@@ -1,5 +1,7 @@
 package com.kairo.app.ui.settings
 
+import com.kairo.app.util.beta.Events
+import com.kairo.app.util.beta.BetaEvent
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -75,13 +77,21 @@ fun SettingsScreen(
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     val resources = LocalResources.current
-    val versionLabel = rememberVersionLabel()
+    val versionLabel = remember { com.kairo.app.util.beta.BetaSupport.versionLabel() }
+    var showWhatsNew by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(settings) {
         settings.events.collect { event ->
             when (event) {
-                is DataEvent.SampleLoaded -> snackbar.showSnackbar(resources.getString(if (event.loaded) R.string.sample_loaded else R.string.sample_already_loaded))
-                is DataEvent.Exported -> shareExport(context, event.json)
-                DataEvent.ResetDone -> Unit // Onboarding replaces this screen as soon as the profile is gone.
+                is DataEvent.SampleLoaded -> {
+                    Events.record(BetaEvent.SAMPLE_LOADED)
+                    snackbar.showSnackbar(resources.getString(if (event.loaded) R.string.sample_loaded else R.string.sample_already_loaded))
+                }
+                is DataEvent.Exported -> {
+                    Events.record(BetaEvent.DATA_EXPORTED)
+                    shareExport(context, event.json)
+                }
+                // Onboarding replaces this screen as soon as the profile is gone.
+                DataEvent.ResetDone -> Events.record(BetaEvent.DATA_RESET)
             }
         }
     }
@@ -102,9 +112,20 @@ fun SettingsScreen(
             focus = { FocusSettingsSection() },
             health = { PermissionsHealthSection(alarmHealth, fixAlarm) },
             data = { DataSection(settings::loadSample, settings::export, settings::reset) },
-            about = { AboutSection(versionLabel, aboutExtra) },
+            about = {
+                AboutSection(
+                    versionLabel,
+                    onFeedback = {
+                        Events.record(BetaEvent.FEEDBACK_SHARED)
+                        context.startActivity(com.kairo.app.util.beta.BetaSupport.feedbackIntent(context))
+                    },
+                    onWhatsNew = { showWhatsNew = true },
+                    extra = aboutExtra,
+                )
+            },
         )
     }
+    if (showWhatsNew) com.kairo.app.ui.beta.WhatsNewSheet(onDismiss = { showWhatsNew = false })
 }
 
 /** Grouped settings with clear headers. Each section's content is a slot so previews can stand in for live ones. */

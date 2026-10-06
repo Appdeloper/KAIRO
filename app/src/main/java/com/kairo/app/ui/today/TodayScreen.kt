@@ -1,5 +1,7 @@
 package com.kairo.app.ui.today
 
+import com.kairo.app.util.beta.BetaEvent
+import com.kairo.app.util.beta.Events
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -50,6 +52,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -155,7 +158,10 @@ fun TodayScreen(
         snackbarHost = { KairoSnackbarHost(snackbarHostState) },
         bottomBar = {
             CommandBar(
-                onSubmit = viewModel::submitCommand,
+                onSubmit = {
+                    Events.record(BetaEvent.COMMAND_SENT)
+                    viewModel.submitCommand(it)
+                },
                 onMic = { context.startActivity(BriefingActivity.voiceIntent(context)) },
             )
         },
@@ -174,6 +180,7 @@ fun TodayScreen(
             onAddTimetable = { onOpenPlan(PlanSegment.TIMETABLE) },
             onLoadSample = viewModel::loadSample,
             notices = {
+                com.kairo.app.ui.command.OfflineNotice()
                 ShakeStoppedCard()
                 // Only nag about alarm permissions once the user actually relies on alarms.
                 if (alarms.anyEnabled) AlarmPermissionBanner(alarmHealth, fixAlarmIssue)
@@ -391,7 +398,7 @@ private fun NowCard(summary: NowSummary, state: TodayUiState, focus: FocusUi?) {
             Spacer(Modifier.width(Spacing.md))
             val done = state.progress.done
             val total = state.progress.total
-            val progressDescription = stringResource(R.string.today_progress_cd, done, total)
+            val progressDescription = pluralStringResource(R.plurals.today_progress_cd, total, done, total)
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = progressDescription }) {
                 ProgressRing(state.progress.fraction, size = 76.dp) {
                     Text(stringResource(R.string.today_progress_count, done, total), style = KairoTheme.numbers.small)
