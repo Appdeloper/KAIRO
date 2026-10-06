@@ -18,6 +18,18 @@ android {
         versionName = "0.1.0"
     }
 
+    // One fixed debug key for every machine, CI included. Without it each GitHub Actions runner
+    // makes a random debug key, and Android refuses to update an app whose signature changed.
+    // Debug only: release signing is not configured here and never uses this key.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("signing/kairo-debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true

@@ -15,3 +15,7 @@ build/
 local.properties
 *.keystore
 *.jks
+# Exception: the shared DEBUG keystore. Its password is the public Android default ("android"),
+# it can only sign debug builds, and committing it gives every CI build the same signature so
+# phone installs update in place. Never add a release keystore here.
+!app/signing/kairo-debug.keystore
