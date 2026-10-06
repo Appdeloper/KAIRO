@@ -6,7 +6,6 @@
     <string name="action_ok">OK</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_save">Save</string>
-    <string name="action_delete">Delete</string>
 
     <!-- Bottom navigation -->
     <string name="nav_today">Today</string>
@@ -18,12 +17,9 @@
     <string name="orb_button_label">Talk to KAIRO</string>
 
     <!-- Onboarding / profile -->
-    <string name="onboarding_title">Hey, I\'m KAIRO</string>
-    <string name="onboarding_subtitle">Three quick things so I can plan your days.</string>
     <string name="profile_name_label">Your first name</string>
     <string name="profile_wake_label">Usually wake up at</string>
     <string name="profile_sleep_label">Usually sleep at</string>
-    <string name="onboarding_start">Let\'s go</string>
     <string name="profile_name_required">Tell me what to call you</string>
 
     <!-- Today -->
@@ -33,33 +29,24 @@
     <string name="greeting_night">Still up, %1$s?</string>
     <string name="today_progress_count">%1$d/%2$d</string>
     <string name="today_progress_label">done</string>
-    <string name="today_empty">Nothing on the timeline yet. Add lectures in Timetable or put a task on today from Tasks.</string>
     <string name="today_anytime">Anytime</string>
     <string name="time_range">%1$s – %2$s</string>
-    <string name="cd_task_done">Done</string>
-    <string name="cd_task_not_done">Not done</string>
-    <string name="cd_fixed_block">Fixed block</string>
+    <string name="cd_fixed_block">Fixed in your timetable. KAIRO won\'t move it.</string>
     <string name="list_separator">" · "</string>
 
     <!-- Timetable -->
     <string name="timetable_add">Add a class</string>
-    <string name="timetable_new_block">New block</string>
-    <string name="timetable_edit_block">Edit block</string>
+    <string name="timetable_new_block">Add to timetable</string>
+    <string name="timetable_edit_block">Edit timetable item</string>
     <string name="block_title_label">Title (e.g. DBMS lecture)</string>
     <string name="block_location_label">Room / place (optional)</string>
-    <string name="block_start">Starts %1$s</string>
-    <string name="block_end">Ends %1$s</string>
     <string name="block_error_title">Give it a title</string>
     <string name="block_error_time">End time must be after start time</string>
     <string name="block_error_day">Pick a day</string>
-    <string name="block_error_role">Pick a role</string>
+    <string name="block_error_role">Pick a lane</string>
 
     <!-- Tasks -->
-    <string name="tasks_backlog">Backlog</string>
-    <string name="tasks_carried_over">Left over from earlier days</string>
-    <string name="tasks_empty">No open tasks. Tap + to add one.</string>
     <string name="tasks_add">Add task</string>
-    <string name="tasks_put_on_today">Today</string>
     <string name="task_title_label">What needs doing?</string>
     <string name="task_duration_label">How long?</string>
     <string name="task_priority_label">Priority</string>
@@ -73,39 +60,28 @@
 
     <!-- Settings -->
     <string name="settings_profile">Profile</string>
-    <string name="settings_roles">Roles</string>
-    <string name="settings_saved">Saved</string>
-    <string name="settings_role_budget">%1$d min / day</string>
 
     <!-- Today: skipped blocks -->
     <string name="timeline_skipped">Skipped today</string>
 
     <!-- Command box (temporary, until voice) -->
-    <string name="command_hint">Try: gym 6 baje · skip gym · aaj kya hai</string>
     <string name="command_send">Send</string>
     <string name="msg_not_understood">Didn\'t get that. Try “add X at 6pm” or “aaj kya hai”.</string>
-    <string name="msg_applied">Plan updated</string>
+    <string name="msg_applied">Done. Your plan is updated.</string>
     <string name="msg_undo">Undo</string>
     <string name="msg_undone">Undone</string>
-    <string name="msg_stale">Your plan changed in the meantime. Nothing was applied, try again.</string>
-    <string name="msg_undo_failed">Can\'t undo: that item changed since.</string>
+    <string name="msg_stale">Your plan changed while this was open, so nothing was applied. Try again.</string>
+    <string name="msg_undo_failed">Can\'t undo: that item has changed since.</string>
 
     <!-- PlanDiff preview -->
-    <string name="plan_title_preview">Here\'s the change</string>
-    <string name="plan_apply">Apply</string>
+    <string name="plan_title_preview">Here\'s what will change</string>
+    <string name="plan_apply">Apply changes</string>
     <string name="plan_close">Close</string>
     <string name="date_today">today</string>
     <string name="date_tomorrow">tomorrow</string>
     <string name="day_and_time">%1$s, %2$s</string>
-    <string name="agenda_item">%1$s · %2$s</string>
     <string name="agenda_empty">Nothing planned.</string>
     <string name="agenda_next_empty">Nothing else on today.</string>
-    <string name="change_added">Add “%1$s” · %2$s</string>
-    <string name="change_scheduled">Schedule “%1$s” · %2$s</string>
-    <string name="change_moved">Move “%1$s” from %2$s to %3$s</string>
-    <string name="change_unscheduled">Take “%1$s” off %2$s (back to Tasks)</string>
-    <string name="change_completed">Mark “%1$s” done</string>
-    <string name="change_block_skipped">Skip “%1$s” %2$s (only this day)</string>
     <string name="reason_not_found">Couldn\'t find “%1$s” on your plan</string>
     <string name="reason_ambiguous">“%1$s” could be: %2$s. Use the full name.</string>
     <string name="reason_fixed">“%1$s” is fixed and can\'t be moved or completed</string>
@@ -123,7 +99,7 @@
     <string name="reason_already_done">“%1$s” is already done</string>
     <string name="reason_already_skipped">“%1$s” is already skipped that day</string>
     <string name="reason_nothing_rollover">Nothing left over from %1$s</string>
-    <string name="reason_no_roles">No roles set up yet</string>
+    <string name="reason_no_roles">No lanes set up yet</string>
 
     <!-- Cloud AI -->
     <string name="msg_ai_unclear">Samajh nahi aaya, dobara bolo</string>
@@ -135,16 +111,15 @@
     <string name="settings_ai_toggle_hint">Sends only what you type plus today\'s and tomorrow\'s titles and times to your own Worker. Phone numbers and emails are removed first.</string>
     <string name="settings_ai_url">Worker URL</string>
     <string name="settings_ai_url_placeholder">https://kairo-proxy.you.workers.dev</string>
-    <string name="settings_ai_url_error">Must be an https:// address</string>
+    <string name="settings_ai_url_error">Use an address that starts with https://</string>
     <string name="settings_ai_token">Device token</string>
-    <string name="settings_ai_status_off">AI is off. Everything is understood on this phone.</string>
-    <string name="settings_ai_status_not_set_up">AI not set up. Using the offline parser only. Add your Worker URL and device token to turn it on.</string>
-    <string name="settings_ai_status_ready">AI on. Falls back to offline parsing if the network is slow or down.</string>
+    <string name="settings_ai_status_off">AI is off. KAIRO understands you right here on the phone.</string>
+    <string name="settings_ai_status_not_set_up">AI isn\'t set up yet, so KAIRO understands you on the phone only. Add your Worker URL and device token to turn it on.</string>
+    <string name="settings_ai_status_ready">AI is on. If the internet is slow or down, KAIRO understands you on the phone instead.</string>
     <string name="cd_show_token">Show token</string>
     <string name="cd_hide_token">Hide token</string>
 
     <!-- Briefing -->
-    <string name="brief_me">Brief me</string>
     <string name="brief_empty_day">Nothing on the plan yet today. Tell me what matters and I\'ll find time for it.</string>
     <string name="brief_empty_evening">You\'re clear for the rest of the day. Time for a quick debrief and some rest.</string>
     <plurals name="brief_summary">
@@ -157,7 +132,6 @@
     <string name="duration_hours_minutes">%1$d h %2$d min</string>
     <string name="brief_gap_suggestion">%1$s free: good for deep work.</string>
     <string name="brief_if_then">If %1$s runs over, then shift the next task, not your break.</string>
-    <string name="brief_best_gap">Best gap %1$s · %2$s</string>
     <string name="brief_up_next">Up next</string>
     <string name="brief_nothing_next">Nothing else on today.</string>
     <string name="brief_offline">Offline brief</string>
@@ -178,7 +152,6 @@
     <string name="widget_description">Next thing on your plan. Tap for the full briefing.</string>
     <string name="widget_all_clear">All clear. Tap to plan.</string>
     <string name="settings_entry_points">Quick access</string>
-    <string name="settings_add_tile">Add KAIRO to Quick Settings</string>
     <string name="settings_tile_manual">Swipe down twice, tap the pencil (edit) and drag the KAIRO tile in. Add the widget from your home screen\'s widget list.</string>
     <string name="settings_tile_added">Tile added</string>
     <string name="settings_tile_already">Tile is already in Quick Settings</string>
@@ -196,49 +169,45 @@
     <string name="alarm_missed_text">%1$s rang at %2$s and went quiet after 10 minutes.</string>
     <string name="alarm_open_kairo">Open KAIRO</string>
     <string name="alarm_snoozed_until">Snoozed until %1$s</string>
-    <string name="alarm_first_item">First up: %1$s</string>
     <plurals name="alarm_snooze_left">
         <item quantity="one">Snooze %1$d min (%2$d left)</item>
         <item quantity="other">Snooze %1$d min (%2$d left)</item>
     </plurals>
     <string name="alarm_no_snoozes">No snoozes left</string>
     <string name="alarm_slide_to_dismiss">Slide to dismiss</string>
-    <string name="alarm_banner_title">Alarms may not ring reliably</string>
-    <string name="alarm_fix">Fix</string>
+    <string name="alarm_banner_title">Your alarms might not ring</string>
+    <string name="alarm_fix">Fix it</string>
     <string name="alarm_issue_exact">Allow Alarms &amp; reminders so alarms ring on time</string>
     <string name="alarm_issue_full_screen">Allow full-screen alerts so the alarm shows on the lock screen</string>
     <string name="alarm_issue_notifications">Allow notifications so the ring screen can appear</string>
-    <string name="alarm_health_exact">Exact alarms allowed</string>
-    <string name="alarm_health_full_screen">Full-screen alarm screen allowed</string>
+    <string name="alarm_health_exact">Alarms &amp; reminders allowed</string>
+    <string name="alarm_health_full_screen">Alarm can fill the lock screen</string>
     <string name="alarm_health_notifications">Notifications on</string>
-    <string name="alarm_health_battery">Battery optimisation off for KAIRO</string>
-    <string name="alarm_health_volume">Alarm volume above zero</string>
+    <string name="alarm_health_battery">Battery set to Unrestricted for KAIRO</string>
+    <string name="alarm_health_volume">Alarm volume is up</string>
     <string name="alarm_health_next">Next alarm: %1$s</string>
     <string name="alarm_health_none">No alarm scheduled</string>
-    <string name="alarm_health_ok">OK</string>
-    <string name="alarm_health_problem">Needs attention</string>
+    <string name="alarm_health_ok">All good</string>
+    <string name="alarm_health_problem">Needs a fix</string>
     <string name="alarm_day_time">%1$s %2$s</string>
     <string name="alarm_add">Add alarm</string>
     <string name="alarm_edit">Edit alarm</string>
     <string name="alarm_wake_label">Wake up</string>
     <string name="alarm_test_label">Test alarm</string>
-    <string name="alarm_proposal_title">Wake-up alarm</string>
+    <string name="alarm_proposal_title">Add a wake-up alarm?</string>
     <string name="alarm_proposal_text">You usually wake at %1$s. Want a weekday alarm for that?</string>
     <string name="alarm_proposal_confirm">Add weekday alarm at %1$s</string>
     <string name="alarm_skip_next">Skip next</string>
-    <string name="alarm_unskip">Unskip next</string>
+    <string name="alarm_unskip">Don\'t skip</string>
     <string name="alarm_next_ring">next %1$s</string>
     <string name="alarm_off">off</string>
     <string name="alarm_row_subtitle">%1$s · %2$s</string>
     <string name="alarm_label">Label</string>
-    <string name="alarm_rings_at">Rings at %1$s</string>
-    <string name="alarm_ringtone">Sound: %1$s</string>
     <string name="alarm_ringtone_default">Default alarm sound</string>
     <string name="alarm_vibrate">Vibrate</string>
-    <string name="alarm_open_briefing">Open the morning briefing after dismiss</string>
-    <string name="alarm_ramp">Volume ramp: %1$d s</string>
+    <string name="alarm_open_briefing">Show my morning briefing after I dismiss</string>
     <string name="alarm_snooze_length">Snooze length</string>
-    <string name="alarm_max_snoozes">Max snoozes</string>
+    <string name="alarm_max_snoozes">Snoozes allowed</string>
     <string name="alarm_type_wake">Repeating</string>
     <string name="alarm_type_block">Lecture</string>
     <string name="alarm_type_once">Once</string>
@@ -261,8 +230,8 @@
     <string name="shake_open_text">Android didn\'t let KAIRO open it directly after your shake.</string>
     <string name="shake_rearm_title">Shake stopped. Tap to turn it back on</string>
     <string name="shake_rearm_text">Your phone restarted. One tap turns shake-to-open back on.</string>
-    <string name="shake_stopped_title">Shake was stopped by your phone. Tap to fix</string>
-    <string name="shake_stopped_text">Tapping turns it back on. To stop it happening again, see Settings, Shake.</string>
+    <string name="shake_stopped_title">Your phone stopped shake-to-open</string>
+    <string name="shake_stopped_text">Turn it back on now. Settings, Shake shows how to stop it happening again.</string>
     <string name="settings_shake">Shake</string>
     <string name="shake_toggle">Shake twice to open the briefing</string>
     <string name="shake_honest_note">Shake depends on your phone letting KAIRO run in the background, and some phones stop it to save battery. The Quick Settings tile, the home-screen widget and the "Brief me" shortcut always work.</string>
@@ -270,14 +239,14 @@
     <string name="shake_meter">Now %1$.1f · trigger at %2$.1f · detected %3$d</string>
     <string name="shake_active_hours">Active hours</string>
     <string name="shake_only_charging">Only while charging</string>
-    <string name="shake_health_armed">Shake is armed</string>
+    <string name="shake_health_armed">Shake is ready</string>
     <string name="shake_health_stopped">Shake is on but not running</string>
     <string name="shake_health_off">Shake is off</string>
-    <string name="shake_health_overlay">Display over other apps (opens the briefing directly)</string>
+    <string name="shake_health_overlay">Display over other apps (lets a shake open the briefing straight away)</string>
     <string name="shake_health_restarts">Restarts today: %1$d</string>
-    <string name="shake_health_heartbeat">Last heartbeat: %1$s</string>
-    <string name="shake_health_no_heartbeat">No heartbeat yet</string>
-    <string name="shake_health_last_path">Last shake opened via: %1$s</string>
+    <string name="shake_health_heartbeat">Last check-in: %1$s</string>
+    <string name="shake_health_no_heartbeat">No check-in yet</string>
+    <string name="shake_health_last_path">Last shake opened the briefing via: %1$s</string>
     <string name="shake_oem_title">%1$s phones</string>
     <string name="shake_oem_open">Open the setting</string>
     <string name="oem_steps_xiaomi">Security app → Permissions → Autostart: turn KAIRO on. Then Settings → Apps → KAIRO → Battery saver: No restrictions. Lock KAIRO in Recents (pull down on its card).</string>
@@ -296,21 +265,20 @@
     <string name="focus_start_title">Start focus</string>
     <string name="focus_minutes">%1$d min</string>
     <string name="focus_custom">Custom</string>
-    <string name="focus_custom_value">Custom · %1$d min</string>
     <string name="focus_start_button">Start %1$d min</string>
     <string name="focus_already_running">Already focusing on %1$s. One session at a time.</string>
-    <string name="focus_open_running">Open it</string>
+    <string name="focus_open_running">Open session</string>
     <string name="focus_notifications_off">Notifications are off for KAIRO, so the countdown and the "time\'s up" alert only show inside the app.</string>
     <string name="focus_started">Focus started. The countdown is in your notifications.</string>
     <string name="focus_refused_running">A focus session is already running.</string>
     <string name="focus_refused_duration">Pick between 1 and 240 minutes.</string>
-    <string name="focus_refused_generic">Couldn\'t start focus. Try again from the Today screen.</string>
+    <string name="focus_refused_generic">Couldn\'t start focus. Try again from Today.</string>
     <string name="focus_chip">Focus · %1$s left · %2$s</string>
     <string name="focus_left">left</string>
     <string name="focus_time_up">Time\'s up</string>
     <string name="focus_extended_by">Extended by %1$d min</string>
     <string name="focus_action_done">Done</string>
-    <string name="focus_action_extend">+10 min</string>
+    <string name="focus_action_extend">Add 10 min</string>
     <string name="focus_action_drop">Drop</string>
     <string name="focus_action_write_next_step">Write next step</string>
     <string name="focus_notif_text">Focus · ends at %1$s</string>
@@ -323,7 +291,7 @@
     <string name="focus_next_step_title_dropped">Want to note where you stopped?</string>
     <string name="focus_next_step_why">One small, concrete action. Future you starts here.</string>
     <string name="focus_next_step_hint">e.g. Add captions to the second half</string>
-    <string name="focus_skip">Skip</string>
+    <string name="focus_skip">Skip for now</string>
     <string name="timeline_next_step">Next: %1$s</string>
     <string name="focus_default_length">Default length (when a task has no time)</string>
     <string name="focus_dnd_toggle">Silence notifications during focus</string>
@@ -331,7 +299,7 @@
     <string name="focus_dnd_access_lost">Do Not Disturb access is off, so focus can\'t silence notifications. Turn the switch on to grant it again.</string>
     <string name="focus_dnd_dialog_title">Allow Do Not Disturb access?</string>
     <string name="focus_dnd_dialog_text">To silence notifications during focus, Android needs you to allow KAIRO under Do Not Disturb access. KAIRO only switches it on while a session runs and switches it off when the session ends. Your wake-up alarms still ring.</string>
-    <string name="focus_dnd_dialog_open">Open settings</string>
+    <string name="focus_dnd_dialog_open">Open Settings</string>
     <string name="focus_promotion_blocked">The focus countdown won\'t show as a status-bar chip or at the top of the lock screen. It still shows as a normal notification.</string>
     <string name="focus_promotion_open">Turn on Live Updates</string>
     <string name="focus_promotion_unsupported">Live Updates need Android 16 or later. On this phone the focus countdown shows as a normal ongoing notification.</string>
@@ -388,7 +356,7 @@
     <string name="block_end_label">Ends</string>
     <string name="tasks_dropped">Dropped \"%1$s\"</string>
     <string name="tasks_drop">Drop</string>
-    <string name="tasks_hint_swipe">Swipe right when done, left to drop.</string>
+    <string name="tasks_hint_swipe">Swipe right to mark done, left to drop.</string>
     <string name="tasks_empty_title">No tasks yet</string>
     <string name="tasks_empty_body">Add what\'s on your mind. KAIRO finds a slot around your lectures when you ask.</string>
     <string name="tasks_group_today">Today</string>
@@ -397,10 +365,10 @@
     <string name="tasks_group_unscheduled">Not planned yet</string>
     <string name="tasks_group_done">Done</string>
     <string name="tasks_put_on_today_cd">Plan %1$s for today</string>
-    <string name="task_priority_help">P1 is most important.</string>
+    <string name="task_priority_help">P1 matters most.</string>
     <string name="action_back">Back</string>
     <string name="action_next">Next</string>
-    <string name="onboarding_begin">Get started</string>
+    <string name="onboarding_begin">Let\'s begin</string>
     <string name="onboarding_finish">Start my day</string>
     <string name="onboarding_step_of">Step %1$d of %2$d</string>
     <string name="cd_kairo_logo">KAIRO logo</string>
@@ -446,7 +414,7 @@
     <string name="alarm_list_header">Your alarms</string>
     <string name="alarm_next_title">Next alarm</string>
     <string name="alarm_none_set">No alarm set</string>
-    <string name="alarm_none_set_body">Add one below and KAIRO will wake you, even on a locked phone.</string>
+    <string name="alarm_none_set_body">Add one and KAIRO will wake you, even when the phone is locked.</string>
     <string name="alarm_next_detail">%1$s · in %2$s · %3$s</string>
     <string name="alarm_skipping_next">Skipping next</string>
     <string name="alarm_on">On</string>
@@ -491,7 +459,7 @@
     <string name="settings_reset_sub">Deletes everything on this phone and starts fresh.</string>
     <string name="settings_reset_confirm_title">Reset everything?</string>
     <string name="settings_reset_confirm_body">This deletes your timetable, tasks, alarms, focus history and settings from this phone. It can\'t be undone.</string>
-    <string name="settings_reset_confirm">Reset</string>
+    <string name="settings_reset_confirm">Reset everything</string>
     <string name="settings_reset_keep">Keep my data</string>
     <string name="settings_about_body">KAIRO keeps your plan on this phone. With cloud AI on, only the words you type or say and today\'s plan go to your own Worker, with phone numbers and emails removed.</string>
     <string name="settings_fonts_license">Fonts: Sora and Inter, SIL Open Font License 1.1.</string>
