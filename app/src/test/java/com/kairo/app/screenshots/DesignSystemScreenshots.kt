@@ -3,6 +3,7 @@ package com.kairo.app.screenshots
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -111,4 +112,12 @@ class DesignSystemScreenshots {
             EmptyState("Nothing planned yet", "Add your timetable or load a sample week.", actionLabel = "Add your timetable", onAction = {}, secondaryLabel = "Load sample week", onSecondary = {})
         }
     }
+
+    @Test fun bottomBar() = Shots.capture(rule, "ds_bottom_bar") {
+        androidx.compose.foundation.layout.Box(Modifier.androidxFill(), contentAlignment = androidx.compose.ui.Alignment.BottomCenter) {
+            com.kairo.app.ui.navigation.KairoBottomBar(current = null, onSelect = {}, onOrb = {})
+        }
+    }
 }
+
+private fun Modifier.androidxFill() = this.then(Modifier.fillMaxSize())

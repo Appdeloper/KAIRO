@@ -62,6 +62,7 @@ class BriefingActivity : ComponentActivity() {
         }
     }
 
+    private var listenOnOpen = false
     private lateinit var speech: AndroidSpeechProvider
     private lateinit var speaker: BriefSpeaker
 
@@ -72,10 +73,12 @@ class BriefingActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
         stopAlarmIfAsked(intent)
+        // Only a fresh open from the orb button listens straight away; a rotation must not re-trigger it.
+        listenOnOpen = savedInstanceState == null && intent.getBooleanExtra(EXTRA_LISTEN, false)
         speech = AndroidSpeechProvider(this)
         speaker = BriefSpeaker(this)
         setContent {
-            KairoTheme { BriefingRoute(viewModel, speech, speaker, onClose = ::finish) }
+            KairoTheme { BriefingRoute(viewModel, speech, speaker, listenOnOpen = listenOnOpen, onClose = ::finish) }
         }
     }
 
@@ -109,15 +112,19 @@ class BriefingActivity : ComponentActivity() {
 
     companion object {
         private const val EXTRA_DISMISS_ALARM_ID = "dismiss_alarm_id"
+        const val EXTRA_LISTEN = "listen_on_open"
 
         fun intent(context: Context): Intent = Intent(context, BriefingActivity::class.java)
+
+        /** From the floating orb: the user tapped to talk, so the mic opens as soon as the screen is up. */
+        fun voiceIntent(context: Context): Intent = intent(context).putExtra(EXTRA_LISTEN, true)
 
         fun dismissAlarmIntent(context: Context, alarmId: Long): Intent = intent(context).putExtra(EXTRA_DISMISS_ALARM_ID, alarmId)
     }
 }
 
 @Composable
-private fun BriefingRoute(viewModel: BriefingViewModel, speech: SpeechProvider, speaker: BriefSpeaker, onClose: () -> Unit) {
+private fun BriefingRoute(viewModel: BriefingViewModel, speech: SpeechProvider, speaker: BriefSpeaker, listenOnOpen: Boolean, onClose: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val lifecycle by androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle.currentStateAsState()
     val resumed = lifecycle.isAtLeast(Lifecycle.State.RESUMED)
@@ -154,7 +161,16 @@ private fun BriefingRoute(viewModel: BriefingViewModel, speech: SpeechProvider, 
         }
     }
     CommandFeedbackEffect(viewModel.events, snackbar, onUndo = viewModel::undo, onApplied = viewModel::onApplied)
-    SpeakBriefEffect(state, resumed, muted, speaker)
+    // Opened to talk: start listening once the screen is resumed, and don't read the brief aloud over
+    // the mic. Starting here is still "inside a visible activity" (rule 6).
+    var listenRequested by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(resumed) {
+        if (listenOnOpen && resumed && !listenRequested && speech.isAvailable) {
+            listenRequested = true
+            onMic()
+        }
+    }
+    SpeakBriefEffect(state, resumed, muted || listenOnOpen, speaker)
 
     BriefingContent(
         topNotice = { ShakeStoppedCard(Modifier.padding(horizontal = 16.dp)) },

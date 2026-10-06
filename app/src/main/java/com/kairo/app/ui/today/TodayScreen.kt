@@ -94,6 +94,7 @@ import java.time.format.FormatStyle
 @Composable
 fun TodayScreen(
     onOpenAlarms: () -> Unit = {},
+    onOpenPlan: (com.kairo.app.ui.plan.PlanSegment) -> Unit = {},
     focus: FocusLauncherViewModel = viewModel(factory = focusLauncherFactory()),
     viewModel: TodayViewModel = viewModel(
         factory = containerFactory {
