@@ -70,6 +70,25 @@ import com.kairo.app.domain.focus.ClockReading
 import com.kairo.app.domain.focus.FocusTiming
 import com.kairo.app.ui.containerFactory
 import com.kairo.app.ui.design.KairoTheme
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import com.kairo.app.ui.design.Radius
+import com.kairo.app.ui.design.Spacing
+import com.kairo.app.ui.design.rememberKairoHaptics
+import com.kairo.app.ui.design.components.KairoIconButton
+import com.kairo.app.ui.design.components.KairoTextButton
+import com.kairo.app.ui.design.components.KairoTextField
+import com.kairo.app.ui.design.components.OrbGlyph
+import com.kairo.app.ui.design.components.PrimaryButton
+import com.kairo.app.ui.design.components.ProgressRing
+import com.kairo.app.ui.design.components.SecondaryButton
+import com.kairo.app.ui.design.components.StatusPill
+import com.kairo.app.ui.design.components.Tone
 import com.kairo.app.util.parseHexColor
 
 /**
@@ -155,7 +174,7 @@ private fun FocusRoute(
     }
     val roleColor = state.role?.let { laneStyle(it).color } ?: KairoTheme.colors.primary
 
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).safeDrawingPadding()) {
+    Box(Modifier.fillMaxSize().background(KairoTheme.colors.background).safeDrawingPadding()) {
         when (mode) {
             FocusMode.SESSION -> {
                 val remaining = rememberFocusRemaining(session)
@@ -163,6 +182,7 @@ private fun FocusRoute(
                 FocusSessionContent(
                     title = session.blockLabel,
                     roleColor = roleColor,
+                    laneName = state.role?.name,
                     remainingMillis = remaining,
                     progress = progress,
                     extendedMinutes = session.extendedMinutes,
@@ -226,48 +246,64 @@ fun FocusSessionContent(
     onDrop: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    laneName: String? = null,
 ) {
+    val colors = KairoTheme.colors
+    val haptics = rememberKairoHaptics()
+    val countdown = formatCountdown(remainingMillis)
     Column(
-        modifier.fillMaxSize().padding(24.dp),
+        modifier.fillMaxSize().padding(horizontal = Spacing.xl, vertical = Spacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(Spacing.lg),
     ) {
-        Row(Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            StatusPill(stringResource(R.string.focus_mode_label), tone = Tone.PRIMARY, icon = Icons.Outlined.Timer)
             Spacer(Modifier.weight(1f))
-            TextButton(onClick = onClose) { Text(stringResource(R.string.action_close)) }
+            KairoTextButton(stringResource(R.string.action_close), onClose, color = colors.textSecondary)
         }
         Spacer(Modifier.weight(1f))
-        Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Box(contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.size(240.dp),
-                color = roleColor,
-                strokeWidth = 10.dp,
-                trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                strokeCap = StrokeCap.Round,
-            )
+        Text(title, style = KairoTheme.type.headlineMedium, textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        if (laneName != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(10.dp).clip(Radius.full).background(roleColor))
+                Spacer(Modifier.width(Spacing.sm))
+                Text(laneName, style = KairoTheme.type.labelLarge, color = colors.textSecondary)
+            }
+        }
+        val ringLabel = if (remainingMillis > 0) stringResource(R.string.focus_ring_cd, countdown) else stringResource(R.string.focus_time_up)
+        ProgressRing(progress, size = 260.dp, strokeWidth = 12.dp, color = roleColor, modifier = Modifier.semantics { contentDescription = ringLabel }) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(formatCountdown(remainingMillis), style = KairoTheme.numbers.large)
+                Text(countdown, style = KairoTheme.numbers.large.copy(fontSize = 56.sp, lineHeight = 60.sp))
                 Text(
                     if (remainingMillis > 0) stringResource(R.string.focus_left) else stringResource(R.string.focus_time_up),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = KairoTheme.type.labelLarge,
+                    color = colors.textSecondary,
                 )
             }
         }
         if (extendedMinutes > 0) {
-            Text(
-                stringResource(R.string.focus_extended_by, extendedMinutes),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            StatusPill(stringResource(R.string.focus_extended_by, extendedMinutes), tone = Tone.NEUTRAL)
         }
         Spacer(Modifier.weight(1f))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(onClick = onDrop, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.focus_action_drop)) }
-            FilledTonalButton(onClick = onExtend, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.focus_action_extend)) }
-            Button(onClick = onDone, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.focus_action_done)) }
+        PrimaryButton(
+            stringResource(R.string.focus_action_done),
+            onClick = {
+                haptics.success()
+                onDone()
+            },
+            icon = Icons.Outlined.Check,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+            SecondaryButton(stringResource(R.string.focus_action_drop), onDrop, Modifier.weight(1f), tint = colors.textSecondary)
+            SecondaryButton(
+                stringResource(R.string.focus_action_extend),
+                onClick = {
+                    haptics.tick()
+                    onExtend()
+                },
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }
@@ -285,45 +321,44 @@ fun NextStepContent(
     modifier: Modifier = Modifier,
     wasDropped: Boolean = false,
 ) {
+    val colors = KairoTheme.colors
     Column(
-        modifier.fillMaxSize().imePadding().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier.fillMaxSize().imePadding().padding(horizontal = Spacing.xl, vertical = Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.lg),
     ) {
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(Spacing.xl))
+        OrbGlyph(size = 64.dp)
         Text(
             stringResource(if (wasDropped) R.string.focus_next_step_title_dropped else R.string.focus_next_step_title),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
+            style = KairoTheme.type.headlineLarge,
         )
-        Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(stringResource(R.string.focus_next_step_why), style = MaterialTheme.typography.bodyMedium)
+        Text(title, style = KairoTheme.type.titleMedium, color = colors.textSecondary)
+        Text(stringResource(R.string.focus_next_step_why), style = KairoTheme.type.bodyLarge, color = colors.textSecondary)
         Row(verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
+            KairoTextField(
                 value = text,
                 onValueChange = onTextChange,
-                placeholder = { Text(stringResource(R.string.focus_next_step_hint)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                label = stringResource(R.string.focus_next_step_label),
+                placeholder = stringResource(R.string.focus_next_step_hint),
                 // A stray Done key mustn't wipe an existing next step with a blank one.
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { if (text.isNotBlank()) onSave() }),
                 modifier = Modifier.weight(1f),
             )
             if (micAvailable) {
-                Spacer(Modifier.width(8.dp))
-                FilledIconButton(onClick = onMic) {
-                    Icon(
-                        if (listening) Icons.Filled.Stop else Icons.Filled.Mic,
-                        contentDescription = stringResource(if (listening) R.string.brief_stop_listening else R.string.brief_mic),
-                    )
-                }
+                Spacer(Modifier.width(Spacing.sm))
+                KairoIconButton(
+                    if (listening) Icons.Filled.Stop else Icons.Filled.Mic,
+                    stringResource(if (listening) R.string.brief_stop_listening else R.string.brief_mic),
+                    onMic,
+                    filled = true,
+                )
             }
         }
+        if (listening) StatusPill(stringResource(R.string.orb_listening), tone = Tone.PRIMARY)
         Spacer(Modifier.weight(1f))
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = onSkip) { Text(stringResource(R.string.focus_skip)) }
-            Spacer(Modifier.weight(1f))
-            Button(onClick = onSave, enabled = text.isNotBlank()) { Text(stringResource(R.string.action_save)) }
-        }
+        PrimaryButton(stringResource(R.string.focus_save_next_step), onSave, Modifier.fillMaxWidth(), enabled = text.isNotBlank())
+        KairoTextButton(stringResource(R.string.focus_skip), onSkip, Modifier.fillMaxWidth(), color = colors.textSecondary)
     }
 }
 
@@ -333,13 +368,13 @@ internal object PreviewFocus {
     val session = FocusTiming.newSession(taskId = 2, label = "Edit reel #12", roleId = 4, minutes = 25, now = now)
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F, heightDp = 851)
 @Composable
 private fun FocusSessionContentPreview() {
     KairoTheme {
         FocusSessionContent(
             title = "Edit reel #12",
-            roleColor = Color(0xFFFF2E93),
+            roleColor = Color(0xFFFF6FB7),
             remainingMillis = 17 * 60_000L + 32_000,
             progress = 0.3f,
             extendedMinutes = 10,
@@ -351,7 +386,7 @@ private fun FocusSessionContentPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F, heightDp = 851)
 @Composable
 private fun NextStepContentPreview() {
     KairoTheme {
@@ -366,4 +401,9 @@ private fun NextStepContentPreview() {
             onSkip = {},
         )
     }
+}
+
+/** Sample session for previews and screenshot tests outside this package. */
+object PreviewFocusAccess {
+    val session get() = PreviewFocus.session
 }

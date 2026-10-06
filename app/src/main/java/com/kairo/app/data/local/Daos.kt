@@ -20,6 +20,9 @@ interface RoleDao {
     @Insert
     suspend fun insertAll(roles: List<Role>)
 
+    @Query("UPDATE roles SET name = :name WHERE id = :id")
+    suspend fun rename(id: Long, name: String)
+
     /** Count + insert in one transaction so two racing launches can't double-seed. */
     @Transaction
     suspend fun insertIfEmpty(roles: List<Role>): Boolean {
@@ -93,6 +96,19 @@ interface TaskDao {
 
     @Query("UPDATE tasks SET status = :status WHERE id = :taskId")
     suspend fun setStatus(taskId: Long, status: TaskStatus)
+
+    /** Placed on a later day and still open: the Plan tab's "Upcoming" group. */
+    @Query(
+        """
+        SELECT * FROM tasks
+        WHERE scheduledEpochDay > :epochDay AND status NOT IN ('DONE', 'DROPPED')
+        ORDER BY scheduledEpochDay, scheduledStartMinute
+        """,
+    )
+    fun upcomingAfter(epochDay: Long): Flow<List<Task>>
+
+    @Query("SELECT * FROM tasks WHERE status = 'DONE' ORDER BY id DESC LIMIT :limit")
+    fun recentlyDone(limit: Int): Flow<List<Task>>
 
     @Query("UPDATE tasks SET nextStep = :nextStep WHERE id = :taskId")
     suspend fun setNextStep(taskId: Long, nextStep: String?)

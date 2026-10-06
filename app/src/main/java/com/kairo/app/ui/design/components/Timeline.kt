@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextDecoration
@@ -68,17 +69,9 @@ fun TimelineItem(
     val dim = state == TimelineState.DONE || state == TimelineState.SKIPPED
     val struck = dim
     val elevation = if (state == TimelineState.FOCUS) Elevation.GLOW else Elevation.LOW
-    Row(
-        modifier.fillMaxWidth().height(IntrinsicSize.Min).semantics { if (stateText != null) stateDescription = stateText },
-        verticalAlignment = Alignment.Top,
-    ) {
-        Column(Modifier.widthIn(min = 64.dp).padding(top = Spacing.md), horizontalAlignment = Alignment.End) {
-            Text(startTime, style = KairoTheme.numbers.small, color = if (dim) colors.textTertiary else colors.textPrimary)
-            if (endTime != null) Text(endTime, style = KairoTheme.numbers.small, color = colors.textTertiary)
-        }
-        Spacer(Modifier.width(Spacing.md))
-        Box(Modifier.fillMaxHeight().width(Stroke.strong).clip(Radius.full).background(laneColor.copy(alpha = if (dim) 0.35f else 0.9f)))
-        Spacer(Modifier.width(Spacing.md))
+    // At large font sizes the side time column would squeeze the card, so times go above it instead.
+    val stacked = LocalDensity.current.fontScale > STACK_FONT_SCALE
+    val card: @Composable RowScope.() -> Unit = {
         Row(
             Modifier
                 .weight(1f)
@@ -127,7 +120,35 @@ fun TimelineItem(
             trailing?.invoke(this)
         }
     }
+    val semanticsModifier = modifier.fillMaxWidth().semantics { if (stateText != null) stateDescription = stateText }
+    if (stacked) {
+        Column(semanticsModifier, verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+            Text(
+                if (endTime != null) "$startTime – $endTime" else startTime,
+                style = KairoTheme.numbers.small,
+                color = if (dim) colors.textTertiary else colors.textSecondary,
+            )
+            Row(Modifier.height(IntrinsicSize.Min)) {
+                Box(Modifier.fillMaxHeight().width(Stroke.strong).clip(Radius.full).background(laneColor.copy(alpha = if (dim) 0.35f else 0.9f)))
+                Spacer(Modifier.width(Spacing.sm))
+                card()
+            }
+        }
+    } else {
+        Row(semanticsModifier.height(IntrinsicSize.Min), verticalAlignment = Alignment.Top) {
+            Column(Modifier.widthIn(min = 64.dp).padding(top = Spacing.md), horizontalAlignment = Alignment.End) {
+                Text(startTime, style = KairoTheme.numbers.small, color = if (dim) colors.textTertiary else colors.textPrimary)
+                if (endTime != null) Text(endTime, style = KairoTheme.numbers.small, color = colors.textTertiary)
+            }
+            Spacer(Modifier.width(Spacing.md))
+            Box(Modifier.fillMaxHeight().width(Stroke.strong).clip(Radius.full).background(laneColor.copy(alpha = if (dim) 0.35f else 0.9f)))
+            Spacer(Modifier.width(Spacing.md))
+            card()
+        }
+    }
 }
+
+private const val STACK_FONT_SCALE = 1.3f
 
 /** The amber "now" line across the timeline. Amber appears here because this is the right moment. */
 @Composable

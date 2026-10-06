@@ -32,15 +32,16 @@ import com.kairo.app.ui.design.Palette
 import com.kairo.app.ui.design.KairoTheme
 import kotlin.math.sin
 
-enum class OrbState { IDLE, LISTENING, THINKING, DONE }
+enum class OrbState { IDLE, LISTENING, THINKING, SPEAKING, DONE }
 
 /** How each state drives the orb; the orb tweens between these so state changes never jump. */
-private data class OrbStyle(val breath: Float, val swirl: Float, val bloom: Float, val levelGain: Float)
+private data class OrbStyle(val breath: Float, val swirl: Float, val bloom: Float, val levelGain: Float, val speak: Float = 0f)
 
 private fun styleFor(state: OrbState) = when (state) {
     OrbState.IDLE -> OrbStyle(breath = 1f, swirl = 0f, bloom = 0f, levelGain = 0f)
     OrbState.LISTENING -> OrbStyle(breath = 0.3f, swirl = 0.15f, bloom = 0f, levelGain = 1f)
     OrbState.THINKING -> OrbStyle(breath = 0.2f, swirl = 1f, bloom = 0f, levelGain = 0f)
+    OrbState.SPEAKING -> OrbStyle(breath = 0.4f, swirl = 0f, bloom = 0.25f, levelGain = 0f, speak = 1f)
     OrbState.DONE -> OrbStyle(breath = 0.5f, swirl = 0f, bloom = 1f, levelGain = 0f)
 }
 
@@ -70,6 +71,7 @@ fun rememberAnimationClock(running: Boolean, label: String): State<Float> {
 }
 
 private const val NANOS_PER_SECOND = 1_000_000_000f
+private const val RIPPLES = 3
 
 @Composable
 fun Orb(
@@ -84,14 +86,18 @@ fun Orb(
     val swirl by animateFloatAsState(target.swirl, tween(TRANSITION_MS), label = "swirl")
     val bloom by animateFloatAsState(target.bloom, tween(TRANSITION_MS), label = "bloom")
     val gain by animateFloatAsState(target.levelGain, tween(TRANSITION_MS), label = "gain")
+    val speak by animateFloatAsState(target.speak, tween(TRANSITION_MS), label = "speak")
     val smoothLevel by animateFloatAsState(level * gain, tween(durationMillis = 90), label = "level")
-    val time by rememberAnimationClock(running, "orb")
+    // Reduced motion: no clock, so the orb is drawn once in its state's shape and stays still.
+    val time by rememberAnimationClock(running && !KairoTheme.reducedMotion, "orb")
+    // Speaking has no mic level to follow, so pulse in a speech-like rhythm instead.
+    val voice = if (state == OrbState.SPEAKING) (0.5f + 0.5f * sin(time * 7f) * sin(time * 1.9f)).coerceIn(0f, 1f) * 0.7f else 0f
 
     val shader = remember(forceFallback) {
         if (!forceFallback && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) OrbShader.createOrNull() else null
     }
     Canvas(modifier) {
-        val params = OrbParams(time, breath, swirl, bloom, smoothLevel)
+        val params = OrbParams(time, breath, swirl, bloom, maxOf(smoothLevel, voice), speak)
         if (shader != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             shader.draw(this, params)
         } else {
@@ -100,7 +106,7 @@ fun Orb(
     }
 }
 
-private data class OrbParams(val time: Float, val breath: Float, val swirl: Float, val bloom: Float, val level: Float)
+private data class OrbParams(val time: Float, val breath: Float, val swirl: Float, val bloom: Float, val level: Float, val speak: Float)
 
 /** Below API 33 (or if the shader fails to compile): layered radial gradients and a rotating ring. */
 private fun DrawScope.drawFallbackOrb(p: OrbParams) {
@@ -125,6 +131,17 @@ private fun DrawScope.drawFallbackOrb(p: OrbParams) {
         ),
         radius = radius,
     )
+    if (p.speak > 0.01f) {
+        // Speaking: soft ripples travelling outward, like sound leaving the orb.
+        repeat(RIPPLES) { i ->
+            val phase = ((p.time * 0.6f + i / RIPPLES.toFloat()) % 1f)
+            drawCircle(
+                color = Palette.Cyan.copy(alpha = (1f - phase) * 0.35f * p.speak),
+                radius = radius * (1.15f + 0.6f * phase),
+                style = Stroke(width = radius * 0.04f),
+            )
+        }
+    }
     if (p.swirl > 0.01f) {
         rotate(degrees = p.time * 240f) {
             drawArc(
@@ -151,6 +168,7 @@ private class OrbShader private constructor(private val shader: RuntimeShader) {
         shader.setFloatUniform("swirl", p.swirl)
         shader.setFloatUniform("bloom", p.bloom)
         shader.setFloatUniform("level", p.level)
+        shader.setFloatUniform("speak", p.speak)
         drawRect(brush)
     }
 
@@ -177,6 +195,7 @@ uniform float breath;
 uniform float swirl;
 uniform float bloom;
 uniform float level;
+uniform float speak;
 layout(color) uniform half4 coreColor;
 layout(color) uniform half4 edgeColor;
 
@@ -193,12 +212,17 @@ half4 main(float2 fragCoord) {
     float t = clamp(r / radius + 0.25 * swirl * (spiral - 0.5), 0.0, 1.0);
     float3 col = mix(float3(coreColor.rgb), float3(edgeColor.rgb), t);
     col = mix(col, float3(1.0), (1.0 - smoothstep(0.0, radius * 0.6, r)) * 0.55);
-    float alpha = clamp(body + glow, 0.0, 1.0);
+    // Speaking: rings travelling outward between the orb and the edge of its glow.
+    float ring = speak * 0.22 * smoothstep(radius, radius * 1.1, r) * (1.0 - smoothstep(radius * 1.2, 0.48, r))
+        * pow(0.5 + 0.5 * sin(r * 70.0 - iTime * 6.0), 6.0);
+    // Fade everything out before the edge of the canvas so the glow never shows a square border.
+    float edge = 1.0 - smoothstep(0.38, 0.5, r);
+    float alpha = clamp(body + glow + ring, 0.0, 1.0) * edge;
     return half4(half3(col * alpha), half(alpha));
 }
 """
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun OrbStatesPreview() {
     KairoTheme {
@@ -208,25 +232,25 @@ private fun OrbStatesPreview() {
     }
 }
 
-@Preview(name = "Orb idle", showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(name = "Orb idle", showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun OrbIdlePreview() {
     KairoTheme { Orb(OrbState.IDLE, 0f, running = false, forceFallback = true, modifier = Modifier.size(180.dp)) }
 }
 
-@Preview(name = "Orb listening", showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(name = "Orb listening", showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun OrbListeningPreview() {
     KairoTheme { Orb(OrbState.LISTENING, 0.8f, running = false, forceFallback = true, modifier = Modifier.size(180.dp)) }
 }
 
-@Preview(name = "Orb thinking", showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(name = "Orb thinking", showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun OrbThinkingPreview() {
     KairoTheme { Orb(OrbState.THINKING, 0f, running = false, forceFallback = true, modifier = Modifier.size(180.dp)) }
 }
 
-@Preview(name = "Orb done", showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(name = "Orb done", showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun OrbDonePreview() {
     KairoTheme { Orb(OrbState.DONE, 0f, running = false, forceFallback = true, modifier = Modifier.size(180.dp)) }

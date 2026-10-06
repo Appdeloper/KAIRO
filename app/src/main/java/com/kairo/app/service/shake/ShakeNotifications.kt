@@ -33,6 +33,7 @@ object ShakeNotifications {
     /** The persistent "shake is on" notification every foreground service must show, with Stop. */
     fun status(context: Context): Notification = NotificationCompat.Builder(context, CHANNEL_STATUS)
         .setSmallIcon(R.drawable.ic_tile_orb)
+        .setColor(context.getColor(R.color.kairo_primary)) // one brand accent across every KAIRO notification
         .setContentTitle(context.getString(R.string.shake_status_title))
         .setContentText(context.getString(R.string.shake_status_text))
         .setOngoing(true)
@@ -49,6 +50,7 @@ object ShakeNotifications {
         context, OPEN_ID,
         NotificationCompat.Builder(context, CHANNEL_OPEN)
             .setSmallIcon(R.drawable.ic_tile_orb)
+            .setColor(context.getColor(R.color.kairo_primary)) // one brand accent across every KAIRO notification
             .setContentTitle(context.getString(R.string.shake_open_title))
             .setContentText(context.getString(R.string.shake_open_text))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -63,6 +65,7 @@ object ShakeNotifications {
         context, REARM_ID,
         NotificationCompat.Builder(context, CHANNEL_OPEN)
             .setSmallIcon(R.drawable.ic_tile_orb)
+            .setColor(context.getColor(R.color.kairo_primary)) // one brand accent across every KAIRO notification
             .setContentTitle(context.getString(R.string.shake_rearm_title))
             .setContentText(context.getString(R.string.shake_rearm_text))
             .setAutoCancel(true)

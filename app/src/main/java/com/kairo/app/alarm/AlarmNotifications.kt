@@ -44,6 +44,7 @@ object AlarmNotifications {
         val fullScreen = ringScreenIntent(context, plan.id)
         val builder = NotificationCompat.Builder(context, CHANNEL_ALARM)
             .setSmallIcon(R.drawable.ic_tile_orb)
+            .setColor(context.getColor(R.color.kairo_primary)) // one brand accent across every KAIRO notification
             .setContentTitle(plan.label.ifBlank { context.getString(R.string.alarm_default_label) })
             .setContentText(context.getString(R.string.alarm_ringing_text))
             .setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -66,6 +67,7 @@ object AlarmNotifications {
         val pi = ringScreenIntent(context, alarmId)
         val notification = NotificationCompat.Builder(context, CHANNEL_ALARM)
             .setSmallIcon(R.drawable.ic_tile_orb)
+            .setColor(context.getColor(R.color.kairo_primary)) // one brand accent across every KAIRO notification
             .setContentTitle(context.getString(R.string.alarm_default_label))
             .setContentText(context.getString(R.string.alarm_ringing_text))
             .setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -84,6 +86,7 @@ object AlarmNotifications {
         val time = rangAt.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
         val notification = NotificationCompat.Builder(context, CHANNEL_INFO)
             .setSmallIcon(R.drawable.ic_tile_orb)
+            .setColor(context.getColor(R.color.kairo_primary)) // one brand accent across every KAIRO notification
             .setContentTitle(context.getString(R.string.alarm_missed_title))
             .setContentText(context.getString(R.string.alarm_missed_text, plan.label.ifBlank { context.getString(R.string.alarm_default_label) }, time))
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
@@ -99,6 +102,7 @@ object AlarmNotifications {
         val time = Instant.ofEpochMilli(until).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
         val notification = NotificationCompat.Builder(context, CHANNEL_INFO)
             .setSmallIcon(R.drawable.ic_tile_orb)
+            .setColor(context.getColor(R.color.kairo_primary)) // one brand accent across every KAIRO notification
             .setContentTitle(context.getString(R.string.alarm_snoozed_until, time))
             .setContentText(plan.label.ifBlank { context.getString(R.string.alarm_default_label) })
             .setOngoing(true)

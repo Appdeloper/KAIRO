@@ -39,6 +39,23 @@ import com.kairo.app.alarm.AlarmHealth
 import com.kairo.app.alarm.AlarmHealthChecker
 import com.kairo.app.alarm.HealthIssue
 import com.kairo.app.ui.design.KairoTheme
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.res.pluralStringResource
+import com.kairo.app.ui.design.MinTouchTarget
+import com.kairo.app.ui.design.Spacing
+import com.kairo.app.ui.design.components.Banner
+import com.kairo.app.ui.design.components.BannerTone
+import com.kairo.app.ui.design.components.GlassCard
+import com.kairo.app.ui.design.components.KairoTextButton
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -79,60 +96,85 @@ private fun openSettings(context: Context, issue: HealthIssue) = context.startAc
 fun AlarmPermissionBanner(health: AlarmHealth, onFix: (HealthIssue) -> Unit, modifier: Modifier = Modifier) {
     val missing = health.missingPermissions
     if (missing.isEmpty()) return
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.WarningAmber, contentDescription = null, tint = KairoTheme.colors.warning)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.alarm_banner_title), style = MaterialTheme.typography.titleSmall)
-            }
-            missing.forEach { issue ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(issueText(issue)), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-                    TextButton(onClick = { onFix(issue) }) { Text(stringResource(R.string.alarm_fix)) }
-                }
-            }
-        }
+    val first = missing.first()
+    Banner(
+        tone = BannerTone.WARNING,
+        title = stringResource(R.string.alarm_banner_title),
+        body = missing.map { stringResource(issueText(it)) }.joinToString("\n"),
+        actionLabel = stringResource(R.string.alarm_fix),
+        onAction = { onFix(first) },
+        modifier = modifier,
+    )
+}
+
+/** Every check, good or bad, plus the next scheduled alarm. Used in Settings > Permissions and health. */
+@Composable
+fun AlarmHealthCard(health: AlarmHealth, onFix: (HealthIssue) -> Unit, modifier: Modifier = Modifier) {
+    GlassCard(modifier) {
+        AlarmHealthRows(health, onFix)
+        Text(
+            health.nextAlarm?.let { stringResource(R.string.alarm_health_next, formatInstant(it)) } ?: stringResource(R.string.alarm_health_none),
+            style = KairoTheme.type.bodyMedium,
+            color = KairoTheme.colors.textSecondary,
+        )
     }
 }
 
-/** Settings card: every check, good or bad, plus the next scheduled alarm. */
 @Composable
-fun AlarmHealthCard(health: AlarmHealth, onFix: (HealthIssue) -> Unit, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            HealthRow(R.string.alarm_health_exact, health.exactAlarms) { onFix(HealthIssue.EXACT_ALARMS) }
-            HealthRow(R.string.alarm_health_full_screen, health.fullScreen) { onFix(HealthIssue.FULL_SCREEN) }
-            HealthRow(R.string.alarm_health_notifications, health.notifications) { onFix(HealthIssue.NOTIFICATIONS) }
-            HealthRow(R.string.alarm_health_battery, health.batteryUnrestricted) { onFix(HealthIssue.BATTERY) }
-            HealthRow(R.string.alarm_health_volume, health.alarmVolumeAudible) { onFix(HealthIssue.ALARM_VOLUME) }
-            Text(
-                health.nextAlarm?.let { stringResource(R.string.alarm_health_next, formatInstant(it)) } ?: stringResource(R.string.alarm_health_none),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 6.dp),
+fun AlarmHealthRows(health: AlarmHealth, onFix: (HealthIssue) -> Unit) {
+    HealthRow(R.string.alarm_health_exact, health.exactAlarms) { onFix(HealthIssue.EXACT_ALARMS) }
+    HealthRow(R.string.alarm_health_full_screen, health.fullScreen) { onFix(HealthIssue.FULL_SCREEN) }
+    HealthRow(R.string.alarm_health_notifications, health.notifications) { onFix(HealthIssue.NOTIFICATIONS) }
+    HealthRow(R.string.alarm_health_battery, health.batteryUnrestricted) { onFix(HealthIssue.BATTERY) }
+    HealthRow(R.string.alarm_health_volume, health.alarmVolumeAudible) { onFix(HealthIssue.ALARM_VOLUME) }
+}
+
+/** Compact on the Alarms tab: one summary line that opens into the full list of checks. */
+@Composable
+fun AlarmHealthSection(health: AlarmHealth, onFix: (HealthIssue) -> Unit, modifier: Modifier = Modifier, initiallyExpanded: Boolean = false) {
+    var expanded by rememberSaveable { mutableStateOf(initiallyExpanded) }
+    val colors = KairoTheme.colors
+    val problems = listOf(health.exactAlarms, health.fullScreen, health.notifications, health.batteryUnrestricted, health.alarmVolumeAudible).count { !it }
+    GlassCard(modifier, contentPadding = PaddingValues(horizontal = Spacing.lg, vertical = Spacing.sm)) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = MinTouchTarget)
+                .clickable(onClickLabel = stringResource(if (expanded) R.string.action_collapse else R.string.action_expand)) { expanded = !expanded },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                if (problems == 0) Icons.Outlined.CheckCircle else Icons.Outlined.WarningAmber,
+                contentDescription = null,
+                tint = if (problems == 0) colors.success else colors.warning,
             )
+            Spacer(Modifier.width(Spacing.md))
+            Text(
+                if (problems == 0) stringResource(R.string.alarm_health_all_good) else pluralStringResource(R.plurals.alarm_health_problems, problems, problems),
+                style = KairoTheme.type.titleSmall,
+                modifier = Modifier.weight(1f),
+            )
+            Icon(if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, contentDescription = null, tint = colors.textSecondary)
+        }
+        AnimatedVisibility(expanded) {
+            Column { AlarmHealthRows(health, onFix) }
         }
     }
 }
 
 @Composable
 internal fun HealthRow(label: Int, ok: Boolean, onFix: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    val colors = KairoTheme.colors
+    Row(Modifier.fillMaxWidth().defaultMinSize(minHeight = MinTouchTarget), verticalAlignment = Alignment.CenterVertically) {
         Icon(
             if (ok) Icons.Outlined.CheckCircle else Icons.Outlined.WarningAmber,
             contentDescription = stringResource(if (ok) R.string.alarm_health_ok else R.string.alarm_health_problem),
-            tint = if (ok) KairoTheme.colors.success else KairoTheme.colors.warning,
+            tint = if (ok) colors.success else colors.warning,
+            modifier = Modifier.size(20.dp),
         )
-        Spacer(Modifier.width(10.dp))
-        Text(stringResource(label), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-        if (!ok) TextButton(onClick = onFix) { Text(stringResource(R.string.alarm_fix)) }
+        Spacer(Modifier.width(Spacing.md))
+        Text(stringResource(label), style = KairoTheme.type.bodyMedium, modifier = Modifier.weight(1f))
+        if (!ok) KairoTextButton(stringResource(R.string.alarm_fix), onFix)
     }
 }
 
@@ -156,14 +198,20 @@ fun formatInstant(instant: Instant): String {
 
 private val PREVIEW_BROKEN = AlarmHealth(false, false, true, false, true, null)
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun AlarmPermissionBannerPreview() {
     KairoTheme { AlarmPermissionBanner(PREVIEW_BROKEN, {}) }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun AlarmHealthCardPreview() {
     KairoTheme { AlarmHealthCard(PREVIEW_BROKEN.copy(exactAlarms = true, nextAlarm = Instant.parse("2026-10-06T01:30:00Z")), {}) }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF05070F)
+@Composable
+private fun AlarmHealthSectionPreview() {
+    KairoTheme { AlarmHealthSection(PREVIEW_BROKEN, {}, initiallyExpanded = true) }
 }

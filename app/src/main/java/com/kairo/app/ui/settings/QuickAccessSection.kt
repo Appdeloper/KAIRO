@@ -6,12 +6,10 @@ import android.content.Context
 import android.graphics.drawable.Icon
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AppShortcut
+import androidx.compose.material.icons.outlined.TouchApp
+import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,28 +19,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.kairo.app.R
 import com.kairo.app.service.BriefTileService
 import com.kairo.app.ui.design.KairoTheme
+import com.kairo.app.ui.design.components.GlassCard
+import com.kairo.app.ui.design.components.KairoTextButton
+import com.kairo.app.ui.design.components.ListRow
 
 /**
- * Helps the user install the fallback entry points. On Android 13+ the system can show its own
- * "add tile" prompt; older versions only allow adding tiles by hand from the QS editor.
+ * The always-working ways in: tile, widget, shortcut. On Android 13+ the system can show its own
+ * "add tile" prompt; older versions only allow adding tiles by hand from the Quick Settings editor.
  */
 @Composable
 fun QuickAccessSection(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var resultRes by remember { mutableStateOf<Int?>(null) }
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(R.string.settings_entry_points), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            OutlinedButton(onClick = { requestTile(context) { resultRes = it } }, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.settings_add_tile))
+    GlassCard(modifier) {
+        ListRow(
+            stringResource(R.string.settings_tile_title),
+            subtitle = resultRes?.let { stringResource(it) } ?: stringResource(R.string.settings_tile_manual),
+            icon = Icons.Outlined.TouchApp,
+        ) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                KairoTextButton(stringResource(R.string.settings_add_tile_short), { requestTile(context) { resultRes = it } })
             }
-            resultRes?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
-        Text(stringResource(R.string.settings_tile_manual), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        ListRow(stringResource(R.string.settings_widget_title), subtitle = stringResource(R.string.settings_widget_how), icon = Icons.Outlined.Widgets)
+        ListRow(stringResource(R.string.settings_shortcut_title), subtitle = stringResource(R.string.settings_shortcut_how), icon = Icons.Outlined.AppShortcut)
     }
 }
 
@@ -65,8 +68,9 @@ private fun requestTile(context: Context, onResult: (Int) -> Unit) {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun QuickAccessSectionPreview() {
     KairoTheme { QuickAccessSection() }
 }
+

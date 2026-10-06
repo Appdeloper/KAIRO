@@ -69,18 +69,17 @@ fun ShakeStoppedCard(modifier: Modifier = Modifier) {
 
 @Composable
 fun ShakeStoppedCardContent(onFix: () -> Unit, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier.fillMaxWidth().clickable(onClick = onFix),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(stringResource(R.string.shake_stopped_title), style = MaterialTheme.typography.titleSmall)
-            Text(stringResource(R.string.shake_stopped_text), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
+    com.kairo.app.ui.design.components.Banner(
+        tone = com.kairo.app.ui.design.components.BannerTone.WARNING,
+        title = stringResource(R.string.shake_stopped_title),
+        body = stringResource(R.string.shake_stopped_text),
+        actionLabel = stringResource(R.string.shake_turn_back_on),
+        onAction = onFix,
+        modifier = modifier,
+    )
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun ShakeStoppedCardPreview() {
     KairoTheme { ShakeStoppedCardContent(onFix = {}) }

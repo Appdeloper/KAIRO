@@ -94,6 +94,7 @@ object FocusNotifications {
         )
         val notification = NotificationCompat.Builder(context, CHANNEL_FOCUS_END)
             .setSmallIcon(R.drawable.ic_tile_orb)
+            .setColor(context.getColor(R.color.kairo_primary)) // one brand accent across every KAIRO notification
             .setContentTitle(title)
             .setContentText(context.getString(R.string.focus_end_text))
             .setCategory(NotificationCompat.CATEGORY_REMINDER)

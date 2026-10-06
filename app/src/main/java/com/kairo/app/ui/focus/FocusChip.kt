@@ -60,7 +60,7 @@ fun formatCountdown(millis: Long): String {
 
 private const val TICK_MS = 1_000L
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun FocusChipPreview() {
     KairoTheme { FocusChip("Edit reel #12", remainingMillis = 12 * 60_000L + 4_000, onClick = {}) }

@@ -9,22 +9,27 @@ import com.kairo.app.data.repository.TimetableRepository
 import com.kairo.app.domain.BlockValidation
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class TimetableUiState(
     val blocks: List<FixedBlock> = emptyList(),
     val roles: List<Role> = emptyList(),
+    val hiddenRoleIds: Set<Long> = emptySet(),
+    val loaded: Boolean = false,
 )
 
 class TimetableViewModel(
     private val repository: TimetableRepository,
     roleRepository: RoleRepository,
+    hiddenRoleIds: Flow<Set<Long>> = flowOf(emptySet()),
 ) : ViewModel() {
 
-    val state: StateFlow<TimetableUiState> = combine(repository.allBlocks(), roleRepository.allRoles()) { blocks, roles ->
-        TimetableUiState(blocks, roles)
+    val state: StateFlow<TimetableUiState> = combine(repository.allBlocks(), roleRepository.allRoles(), hiddenRoleIds) { blocks, roles, hidden ->
+        TimetableUiState(blocks, roles, hidden, loaded = true)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TimetableUiState())
 
     fun save(block: FixedBlock) {

@@ -15,6 +15,10 @@ class RoleRepository(private val dao: RoleDao) {
 
     /** Returns true only on the launch that actually seeded, so callers can log or react once. */
     suspend fun seedDefaultsIfEmpty(): Boolean = dao.insertIfEmpty(DefaultRoles.all)
+
+    suspend fun rename(id: Long, name: String) {
+        if (name.isNotBlank()) dao.rename(id, name.trim())
+    }
 }
 
 class TimetableRepository(private val dao: FixedBlockDao, private val skipDao: BlockSkipDao) {
@@ -32,6 +36,11 @@ class TaskRepository(
     fun tasksForDate(epochDay: Long): Flow<List<Task>> = dao.tasksForDate(epochDay)
     fun unfinishedBefore(epochDay: Long): Flow<List<Task>> = dao.unfinishedBefore(epochDay)
     fun unscheduledOpenTasks(): Flow<List<Task>> = dao.unscheduledOpenTasks()
+    fun upcomingAfter(epochDay: Long): Flow<List<Task>> = dao.upcomingAfter(epochDay)
+    fun recentlyDone(limit: Int = RECENT_DONE_LIMIT): Flow<List<Task>> = dao.recentlyDone(limit)
+
+    /** Swipe-to-drop and its Undo: the previous status is restored exactly. */
+    suspend fun setStatus(task: Task, status: TaskStatus) = dao.setStatus(task.id, status)
 
     suspend fun addTask(
         title: String,
@@ -67,3 +76,5 @@ class TaskRepository(
         dao.setStatus(task.id, next)
     }
 }
+
+private const val RECENT_DONE_LIMIT = 30

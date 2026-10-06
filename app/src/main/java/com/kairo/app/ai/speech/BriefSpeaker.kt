@@ -5,6 +5,9 @@ import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.util.Locale
 
 /**
@@ -15,6 +18,11 @@ class BriefSpeaker(context: Context) {
     private var ready = false
     private var pending: Pair<String, () -> Unit>? = null
     private var onDone: (() -> Unit)? = null
+
+    private val _speaking = MutableStateFlow(false)
+
+    /** True while TTS is actually talking, so the orb can show its "speaking" state. */
+    val speaking: StateFlow<Boolean> = _speaking.asStateFlow()
 
     /** TTS callbacks arrive on a binder thread; UI state must be touched on main. */
     private val main = Handler(Looper.getMainLooper())
@@ -31,13 +39,21 @@ class BriefSpeaker(context: Context) {
         val result = tts.setLanguage(indianEnglish)
         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) tts.setLanguage(Locale.getDefault())
         tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(utteranceId: String?) = Unit
+            override fun onStart(utteranceId: String?) {
+                main.post { _speaking.value = true }
+            }
+
             override fun onDone(utteranceId: String?) {
-                if (utteranceId == UTTERANCE_ID) main.post { onDone?.invoke() }
+                main.post {
+                    _speaking.value = false
+                    if (utteranceId == UTTERANCE_ID) onDone?.invoke()
+                }
             }
 
             @Deprecated("Required override on older APIs")
-            override fun onError(utteranceId: String?) = Unit
+            override fun onError(utteranceId: String?) {
+                main.post { _speaking.value = false }
+            }
         })
     }
 
@@ -54,6 +70,7 @@ class BriefSpeaker(context: Context) {
     fun stop() {
         pending = null
         onDone = null
+        _speaking.value = false
         if (ready) tts.stop()
     }
 

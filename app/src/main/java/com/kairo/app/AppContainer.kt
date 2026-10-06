@@ -26,6 +26,14 @@ import com.kairo.app.service.focus.FocusEngine
 import com.kairo.app.util.DateProvider
 import com.kairo.app.util.SystemDateProvider
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import androidx.datastore.preferences.core.edit
+import androidx.room.withTransaction
+import com.kairo.app.alarm.AlarmSync
+import com.kairo.app.data.sample.SampleWeek
+import com.kairo.app.data.export.DataExport
+import com.kairo.app.service.shake.ShakeControl
 
 private val Context.userPrefsStore by preferencesDataStore(name = "user_prefs")
 
@@ -52,6 +60,48 @@ class AppContainer(context: Context) {
     val shakePrefsRepository by lazy { ShakePrefsRepository(appContext.userPrefsStore) }
     val aiSettingsRepository by lazy { AiSettingsRepository(appContext.userPrefsStore) }
     private val httpClient by lazy { CloudParser.defaultHttpClient() }
+
+    /**
+     * "Load a sample week" from onboarding, Today's empty state and Settings. Returns false (and
+     * changes nothing) if it was already loaded.
+     */
+    suspend fun loadSampleWeek(): Boolean = withContext(Dispatchers.IO) {
+        if (userPrefsRepository.sampleWeekLoaded.first()) return@withContext false
+        roleRepository.seedDefaultsIfEmpty()
+        val roles = roleRepository.allRoles().first()
+        val sample = SampleWeek.build(dateProvider.today(), roles, System.currentTimeMillis())
+        database.withTransaction {
+            sample.blocks.forEach { database.fixedBlockDao().upsert(it) }
+            sample.tasks.forEach { database.taskDao().insert(it) }
+            database.alarmDao().insert(sample.alarm)
+        }
+        userPrefsRepository.markSampleWeekLoaded()
+        true
+    }
+
+    /**
+     * Settings > Data > Reset all data: every table, every preference (which sends the user back to
+     * onboarding), and everything those rows had scheduled in the system.
+     */
+    suspend fun resetAllData() = withContext(Dispatchers.IO) {
+        focusEngine.forgetEverything()
+        ShakeControl.stop(appContext)
+        database.clearAllTables()
+        appContext.userPrefsStore.edit { it.clear() }
+        roleRepository.seedDefaultsIfEmpty()
+        AlarmSync.syncAll(appContext)
+    }
+
+    /** Settings > Data > Export: the user's own data as JSON, shared only where they choose. */
+    suspend fun exportData(): String = withContext(Dispatchers.IO) {
+        DataExport.toJson(
+            roles = roleRepository.allRoles().first(),
+            blocks = database.fixedBlockDao().allBlocksOnce(),
+            tasks = database.taskDao().allTasksOnce(),
+            alarms = database.alarmDao().allOnce(),
+            exportedAtMillis = System.currentTimeMillis(),
+        )
+    }
 
     private suspend fun plannerSnapshot() = PlannerSnapshot(planRepository.loadState(), userPrefsRepository.prefs.first().firstName)
 

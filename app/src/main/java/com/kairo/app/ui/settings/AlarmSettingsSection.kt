@@ -1,10 +1,8 @@
 package com.kairo.app.ui.settings
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,35 +12,34 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.kairo.app.R
-import com.kairo.app.alarm.AlarmHealth
-import com.kairo.app.alarm.HealthIssue
-import com.kairo.app.ui.alarms.AlarmHealthCard
 import com.kairo.app.ui.design.KairoTheme
+import com.kairo.app.ui.design.components.GlassCard
+import com.kairo.app.ui.design.components.SecondaryButton
 
-/** Alarm health at a glance plus a one-minute test alarm, to prove ringing works on this phone. */
+/** A one-minute test alarm, to prove ringing works on this phone. Health checks live in Permissions and health. */
 @Composable
-fun AlarmSettingsSection(health: AlarmHealth, onFix: (HealthIssue) -> Unit, onTestAlarm: () -> Unit, modifier: Modifier = Modifier) {
+fun AlarmSettingsSection(onTestAlarm: () -> Unit, modifier: Modifier = Modifier) {
     var testScheduled by remember { mutableStateOf(false) }
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(R.string.settings_alarms), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-        AlarmHealthCard(health, onFix)
-        OutlinedButton(
+    GlassCard(modifier) {
+        Text(stringResource(R.string.settings_test_alarm_intro), style = KairoTheme.type.bodyMedium, color = KairoTheme.colors.textSecondary)
+        SecondaryButton(
+            stringResource(R.string.settings_test_alarm),
             onClick = {
                 onTestAlarm()
                 testScheduled = true
             },
+            icon = Icons.Outlined.NotificationsActive,
             modifier = Modifier.fillMaxWidth(),
-        ) { Text(stringResource(R.string.settings_test_alarm)) }
+        )
         if (testScheduled) {
-            Text(stringResource(R.string.settings_test_alarm_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.settings_test_alarm_hint), style = KairoTheme.type.bodySmall, color = KairoTheme.colors.success)
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun AlarmSettingsSectionPreview() {
-    KairoTheme { AlarmSettingsSection(AlarmHealth.ALL_GOOD, {}, {}) }
+    KairoTheme { AlarmSettingsSection({}) }
 }

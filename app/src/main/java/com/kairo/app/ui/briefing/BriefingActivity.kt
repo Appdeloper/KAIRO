@@ -171,11 +171,13 @@ private fun BriefingRoute(viewModel: BriefingViewModel, speech: SpeechProvider, 
         }
     }
     SpeakBriefEffect(state, resumed, muted || listenOnOpen, speaker)
+    val speaking by speaker.speaking.collectAsStateWithLifecycle()
 
     BriefingContent(
-        topNotice = { ShakeStoppedCard(Modifier.padding(horizontal = 16.dp)) },
+        topNotice = { ShakeStoppedCard(Modifier.padding(horizontal = com.kairo.app.ui.design.Spacing.lg)) },
         state = state,
-        orbState = orbState,
+        // "Speaking" comes from the TTS engine, not the view model; it shows only while idle otherwise.
+        orbState = if (speaking && orbState == OrbState.IDLE) OrbState.SPEAKING else orbState,
         micLevel = level,
         running = resumed,
         burst = burst,

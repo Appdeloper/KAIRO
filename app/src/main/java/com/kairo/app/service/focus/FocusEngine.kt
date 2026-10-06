@@ -109,6 +109,12 @@ class FocusEngine(
 
     fun dismissEndedNotification() = FocusNotifications.cancelEnded(context)
 
+    /** For "Reset all data": nothing of a session may outlive its rows (alarms, notifications, DND). */
+    suspend fun forgetEverything() {
+        cleanUp()
+        FocusNotifications.cancelEnded(context)
+    }
+
     private suspend fun show(session: FocusSession, repost: Boolean = true) {
         val now = repository.now()
         if (repost) FocusNotifications.showOngoing(context, session, roleColor(session.roleId), now)

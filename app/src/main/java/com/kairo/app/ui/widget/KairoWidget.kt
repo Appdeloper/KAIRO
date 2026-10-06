@@ -2,7 +2,6 @@ package com.kairo.app.ui.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -34,8 +33,12 @@ import com.kairo.app.R
 import com.kairo.app.domain.TimelineBuilder
 import com.kairo.app.domain.brief.Upcoming
 import com.kairo.app.ui.briefing.BriefingActivity
+import com.kairo.app.ui.design.DarkColorRoles
 
-/** 2x2 home-screen widget: a small orb and the next thing on today's plan. Tap opens the briefing. */
+/** What the widget shows: a label ("Next", "Now"), the item, and how long until it starts. */
+internal data class WidgetLine(val label: String, val title: String, val countdown: String?)
+
+/** 2x2 home-screen widget: a small orb, the next thing on today's plan and a countdown. Tap opens the briefing. */
 class KairoWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Single
 
@@ -45,38 +48,50 @@ class KairoWidget : GlanceAppWidget() {
     }
 
     /** Computed when the widget is refreshed (plan change or every 15 min), so minutes are approximate. */
-    private suspend fun nextLine(context: Context): String {
+    private suspend fun nextLine(context: Context): WidgetLine {
         val container = (context.applicationContext as KairoApp).container
         val state = container.planRepository.loadState()
         val entries = TimelineBuilder.build(state.blocksOn(state.today), state.tasksOn(state.today), state.roles)
-        val next = Upcoming.next(entries, state.nowMinute) ?: return context.getString(R.string.widget_all_clear)
+        val next = Upcoming.next(entries, state.nowMinute)
+            ?: return WidgetLine(context.getString(R.string.widget_label_today), context.getString(R.string.widget_all_clear), null)
+        val minutes = next.minutesUntil
         return when {
-            next.minutesUntil <= 0 -> context.getString(R.string.widget_now, next.entry.title)
-            next.minutesUntil >= 60 -> context.getString(R.string.widget_next_hours, next.entry.title, next.minutesUntil / 60, next.minutesUntil % 60)
-            else -> context.getString(R.string.widget_next_minutes, next.entry.title, next.minutesUntil)
+            minutes <= 0 -> WidgetLine(context.getString(R.string.widget_label_now), next.entry.title, null)
+            minutes >= 60 -> WidgetLine(context.getString(R.string.widget_label_next), next.entry.title, context.getString(R.string.widget_in_hours, minutes / 60, minutes % 60))
+            else -> WidgetLine(context.getString(R.string.widget_label_next), next.entry.title, context.getString(R.string.widget_in_minutes, minutes))
         }
     }
 }
 
 @Composable
-private fun WidgetBody(line: String) {
+private fun WidgetBody(line: WidgetLine) {
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
             .cornerRadius(24.dp)
-            .background(ColorProvider(Color(0xFF0F0F16)))
+            .background(R.color.kairo_surface1)
             .clickable(actionStartActivity<BriefingActivity>())
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(provider = ImageProvider(R.drawable.widget_orb), contentDescription = null, modifier = GlanceModifier.size(56.dp))
-        Spacer(GlanceModifier.height(8.dp))
+        Image(provider = ImageProvider(R.drawable.widget_orb), contentDescription = null, modifier = GlanceModifier.size(48.dp))
+        Spacer(GlanceModifier.height(6.dp))
         Text(
-            text = line,
-            maxLines = 2,
-            style = TextStyle(color = ColorProvider(Color(0xFFECECF4)), fontSize = 13.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center),
+            text = line.label.uppercase(),
+            style = TextStyle(color = ColorProvider(DarkColorRoles.textSecondary), fontSize = 11.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center),
         )
+        Text(
+            text = line.title,
+            maxLines = 2,
+            style = TextStyle(color = ColorProvider(DarkColorRoles.textPrimary), fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center),
+        )
+        line.countdown?.let {
+            Text(
+                text = it,
+                style = TextStyle(color = ColorProvider(DarkColorRoles.primary), fontSize = 13.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center),
+            )
+        }
     }
 }
 

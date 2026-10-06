@@ -15,35 +15,41 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kairo.app.R
-import com.kairo.app.ui.briefing.Orb
-import com.kairo.app.ui.briefing.OrbState
 import com.kairo.app.ui.design.KairoTheme
+import com.kairo.app.ui.design.Elevation
+import com.kairo.app.ui.design.Radius
+import com.kairo.app.ui.design.Spacing
+import com.kairo.app.ui.design.components.GlassCard
+import com.kairo.app.ui.design.components.OrbGlyph
+import com.kairo.app.ui.design.components.SecondaryButton
+import com.kairo.app.ui.design.components.glass
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material.icons.outlined.Snooze
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -61,51 +67,61 @@ fun AlarmRingScreen(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val colors = KairoTheme.colors
     Column(
         modifier
             .fillMaxSize()
-            .background(KairoTheme.colors.background)
+            // Soft navy glow from the top, never a white blast in a dark room.
+            .background(Brush.verticalGradient(listOf(colors.surface2, colors.background)))
             .safeDrawingPadding()
-            .padding(24.dp),
+            .padding(horizontal = Spacing.xl, vertical = Spacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Spacer(Modifier.height(32.dp))
-            Text(
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            Spacer(Modifier.height(Spacing.xl))
+            // Shrinks to fit (12-hour times with AM/PM, or 200% font) instead of clipping the digits.
+            BasicText(
                 clock.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
-                style = KairoTheme.numbers.hero,
-                fontWeight = FontWeight.Light,
-                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.fillMaxWidth(),
+                style = KairoTheme.numbers.hero.copy(color = colors.textPrimary, textAlign = TextAlign.Center),
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(minFontSize = RING_TIME_MIN_SIZE, maxFontSize = RING_TIME_SIZE),
             )
             Text(
                 label.ifBlank { stringResource(R.string.alarm_default_label) },
-                style = MaterialTheme.typography.headlineSmall,
-                color = KairoTheme.colors.primary,
+                style = KairoTheme.type.headlineMedium,
+                color = colors.textSecondary,
                 textAlign = TextAlign.Center,
             )
-            firstItem?.let {
-                Text(stringResource(R.string.alarm_first_item, it), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
         }
-        // Static orb: the ring screen spends its GPU budget on staying awake, not on shaders.
-        Orb(OrbState.LISTENING, level = 0.6f, running = false, forceFallback = true, modifier = Modifier.size(180.dp))
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            OutlinedButton(onClick = onSnooze, enabled = snoozesLeft > 0, modifier = Modifier.fillMaxWidth().height(56.dp)) {
-                Text(
-                    if (snoozesLeft > 0) {
-                        pluralStringResource(R.plurals.alarm_snooze_left, snoozesLeft, snoozeMinutes, snoozesLeft)
-                    } else {
-                        stringResource(R.string.alarm_no_snoozes)
-                    },
-                    style = MaterialTheme.typography.titleMedium,
-                )
+        // Static orb: the ring screen spends its battery on staying awake, not on shaders.
+        OrbGlyph(size = 150.dp)
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
+            firstItem?.let {
+                GlassCard(contentPadding = PaddingValues(Spacing.lg)) {
+                    Text(stringResource(R.string.alarm_first_up_label).uppercase(), style = KairoTheme.type.labelSmall, color = colors.textSecondary)
+                    Text(it, style = KairoTheme.type.titleLarge)
+                }
             }
+            SecondaryButton(
+                if (snoozesLeft > 0) {
+                    pluralStringResource(R.plurals.alarm_snooze_left, snoozesLeft, snoozeMinutes, snoozesLeft)
+                } else {
+                    stringResource(R.string.alarm_no_snoozes)
+                },
+                onClick = onSnooze,
+                enabled = snoozesLeft > 0,
+                icon = Icons.Outlined.Snooze,
+                modifier = Modifier.fillMaxWidth().height(64.dp),
+            )
             SlideToDismiss(onDismiss)
         }
     }
 }
 
+private val RING_TIME_SIZE = 96.sp
+private val RING_TIME_MIN_SIZE = 40.sp
 private const val DISMISS_THRESHOLD = 0.8f
 
 /** A deliberate slide, so a pocket or pillow can't dismiss the alarm. TalkBack can still activate it. */
@@ -113,24 +129,26 @@ private const val DISMISS_THRESHOLD = 0.8f
 private fun SlideToDismiss(onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
     val offset = remember { Animatable(0f) }
+    val colors = KairoTheme.colors
     val dismissLabel = stringResource(R.string.alarm_slide_to_dismiss)
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
-            .height(72.dp)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(36.dp))
+            .height(TRACK_HEIGHT)
+            .glass(colors.surface2, Radius.full, Elevation.RAISED)
             .semantics { onClick(label = dismissLabel) { onDismiss(); true } },
         contentAlignment = Alignment.CenterStart,
     ) {
-        val thumb = 64.dp
+        val thumb = TRACK_HEIGHT - 8.dp
         val maxPx = with(LocalDensity.current) { (maxWidth - thumb - 8.dp).toPx() }
-        Text(dismissLabel, Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(dismissLabel, Modifier.fillMaxWidth().padding(start = thumb), textAlign = TextAlign.Center, style = KairoTheme.type.titleMedium, color = colors.textSecondary)
         Box(
             Modifier
                 .padding(4.dp)
                 .offset { IntOffset(offset.value.roundToInt(), 0) }
                 .size(thumb)
-                .background(KairoTheme.colors.primary, CircleShape)
+                .clip(Radius.full)
+                .background(colors.primaryGradient)
                 .pointerInput(maxPx) {
                     detectHorizontalDragGestures(
                         onDragEnd = {
@@ -147,12 +165,14 @@ private fun SlideToDismiss(onDismiss: () -> Unit) {
                 },
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = KairoTheme.colors.onPrimary)
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = colors.onPrimary, modifier = Modifier.size(32.dp))
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B, heightDp = 780)
+private val TRACK_HEIGHT = 88.dp
+
+@Preview(showBackground = true, backgroundColor = 0xFF05070F, heightDp = 851)
 @Composable
 private fun AlarmRingScreenPreview() {
     KairoTheme {
@@ -160,7 +180,7 @@ private fun AlarmRingScreenPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B, heightDp = 780)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F, heightDp = 851)
 @Composable
 private fun AlarmRingNoSnoozePreview() {
     KairoTheme {

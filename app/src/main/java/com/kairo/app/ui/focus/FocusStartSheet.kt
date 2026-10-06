@@ -7,19 +7,10 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -31,9 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.core.app.NotificationManagerCompat
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
 import com.kairo.app.R
 import com.kairo.app.data.local.FocusSession
 import com.kairo.app.data.local.Role
@@ -41,8 +32,19 @@ import com.kairo.app.domain.TimelineEntry
 import com.kairo.app.domain.focus.FocusDurations
 import com.kairo.app.domain.focus.FocusRules
 import com.kairo.app.ui.PreviewData
-import com.kairo.app.ui.components.RoleDot
 import com.kairo.app.ui.design.KairoTheme
+import com.kairo.app.ui.design.Spacing
+import com.kairo.app.ui.design.components.Banner
+import com.kairo.app.ui.design.components.BannerTone
+import com.kairo.app.ui.design.components.ChoicePill
+import com.kairo.app.ui.design.components.KairoBottomSheet
+import com.kairo.app.ui.design.components.KairoTextButton
+import com.kairo.app.ui.design.components.PrimaryButton
+import com.kairo.app.ui.design.components.RoleChip
+import com.kairo.app.ui.design.components.SectionHeader
+import com.kairo.app.ui.design.components.SheetFrame
+import com.kairo.app.ui.design.components.SliderRow
+import com.kairo.app.ui.design.rememberKairoHaptics
 
 /** What a focus session is about: a task (linked, gets the next step) or a lecture block (label only). */
 data class FocusTarget(val taskId: Long?, val title: String, val role: Role?, val startMinute: Int?, val endMinute: Int?) {
@@ -57,8 +59,7 @@ data class FocusTarget(val taskId: Long?, val title: String, val role: Role?, va
     }
 }
 
-/** Same sheet style as the PlanDiff preview: full height, no half-expanded state. */
-@OptIn(ExperimentalMaterial3Api::class)
+/** Same sheet style as the change preview: full height, no half-expanded state. */
 @Composable
 fun FocusStartSheet(
     target: FocusTarget,
@@ -70,7 +71,7 @@ fun FocusStartSheet(
 ) {
     val context = LocalContext.current
     val notificationsOff = remember { !NotificationManagerCompat.from(context).areNotificationsEnabled() }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    KairoBottomSheet(onDismissRequest = onDismiss) {
         FocusStartContent(
             target = target,
             initialMinutes = FocusDurations.initialFor(target.startMinute, target.endMinute, defaultMinutes),
@@ -97,102 +98,95 @@ fun FocusStartContent(
 ) {
     var minutes by rememberSaveable { mutableIntStateOf(initialMinutes) }
     var custom by rememberSaveable { mutableStateOf(initialMinutes !in FocusDurations.CHIPS) }
+    val haptics = rememberKairoHaptics()
 
     Column(
         modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(horizontal = Spacing.screen)
+            .padding(bottom = Spacing.xl),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
-        Text(stringResource(R.string.focus_start_title), style = MaterialTheme.typography.titleLarge)
+        Text(stringResource(R.string.focus_start_title), style = KairoTheme.type.headlineSmall)
         Row(verticalAlignment = Alignment.CenterVertically) {
-            RoleDot(target.role, size = 12.dp)
-            Spacer(Modifier.width(10.dp))
-            Text(target.title, style = MaterialTheme.typography.titleMedium)
+            RoleChip(target.role)
+            Spacer(Modifier.width(Spacing.sm))
+            Text(target.title, style = KairoTheme.type.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionHeader(stringResource(R.string.focus_how_long))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             FocusDurations.CHIPS.forEach { option ->
-                FilterChip(
-                    selected = !custom && minutes == option,
-                    onClick = {
-                        custom = false
-                        minutes = option
-                    },
-                    label = { Text(stringResource(R.string.focus_minutes, option)) },
-                )
+                ChoicePill(stringResource(R.string.focus_minutes, option), !custom && minutes == option, {
+                    custom = false
+                    minutes = option
+                })
             }
-            FilterChip(
-                selected = custom,
-                onClick = { custom = true },
-                label = { Text(if (custom) stringResource(R.string.focus_custom_value, minutes) else stringResource(R.string.focus_custom)) },
-            )
+            ChoicePill(stringResource(R.string.focus_custom), custom, { custom = true })
         }
         if (custom) {
-            Slider(
-                value = minutes.toFloat(),
-                onValueChange = { minutes = FocusDurations.snap(it) },
+            SliderRow(
+                stringResource(R.string.focus_custom),
+                stringResource(R.string.focus_minutes, minutes),
+                minutes.toFloat(),
+                { minutes = FocusDurations.snap(it) },
                 valueRange = FocusRules.MIN_MINUTES.toFloat()..FocusRules.MAX_MINUTES.toFloat(),
             )
         }
         running?.let { RunningNotice(it, onOpenRunning) }
         if (notificationsOff) {
-            Text(stringResource(R.string.focus_notifications_off), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            Banner(BannerTone.WARNING, stringResource(R.string.focus_notifications_off))
         }
-        Row(Modifier.fillMaxWidth().padding(bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Spacer(Modifier.weight(1f))
-            TextButton(onClick = onCancel) { Text(stringResource(R.string.action_cancel)) }
-            Spacer(Modifier.width(8.dp))
-            Button(onClick = { onStart(minutes) }, enabled = running == null) {
-                Text(stringResource(R.string.focus_start_button, minutes))
-            }
-        }
+        Spacer(Modifier.height(Spacing.xs))
+        PrimaryButton(
+            stringResource(R.string.focus_start_button, minutes),
+            onClick = {
+                haptics.tick()
+                onStart(minutes)
+            },
+            enabled = running == null,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        KairoTextButton(stringResource(R.string.action_cancel), onCancel, Modifier.fillMaxWidth(), color = KairoTheme.colors.textSecondary)
     }
 }
 
 /** One session at a time: say so plainly and offer the running one instead of silently refusing. */
 @Composable
 private fun RunningNotice(running: FocusSession, onOpenRunning: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-    ) {
-        Row(Modifier.padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                stringResource(R.string.focus_already_running, running.blockLabel),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f),
-            )
-            TextButton(onClick = onOpenRunning) { Text(stringResource(R.string.focus_open_running)) }
-        }
-    }
+    Banner(
+        BannerTone.INFO,
+        stringResource(R.string.focus_already_running, running.blockLabel),
+        actionLabel = stringResource(R.string.focus_open_running),
+        onAction = onOpenRunning,
+    )
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0F0F16)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun FocusStartContentPreview() {
     KairoTheme {
-        FocusStartContent(
+        SheetFrame { FocusStartContent(
             target = FocusTarget(taskId = 2, title = "Edit reel #12", role = PreviewData.roles[3], startMinute = 16 * 60, endMinute = 16 * 60 + 45),
             initialMinutes = 45,
             running = null,
             onStart = {},
             onOpenRunning = {},
             onCancel = {},
-        )
+        ) }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0F0F16)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun FocusStartContentBusyPreview() {
     KairoTheme {
-        FocusStartContent(
+        SheetFrame { FocusStartContent(
             target = FocusTarget(taskId = null, title = "DBMS lecture", role = PreviewData.roles[0], startMinute = 540, endMinute = 600),
             initialMinutes = 50,
             running = PreviewFocus.session,
             onStart = {},
             onOpenRunning = {},
             onCancel = {},
-        )
+        ) }
     }
 }

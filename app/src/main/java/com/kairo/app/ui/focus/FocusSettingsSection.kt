@@ -51,6 +51,14 @@ import com.kairo.app.service.focus.FocusPromotion
 import com.kairo.app.service.focus.PromotionStatus
 import com.kairo.app.ui.containerFactory
 import com.kairo.app.ui.design.KairoTheme
+import com.kairo.app.ui.design.Spacing
+import com.kairo.app.ui.design.components.Banner
+import com.kairo.app.ui.design.components.BannerTone
+import com.kairo.app.ui.design.components.ChoicePill
+import com.kairo.app.ui.design.components.GlassCard
+import com.kairo.app.ui.design.components.ToggleRow
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DoNotDisturbOn
 import com.kairo.app.domain.focus.FocusDurations
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -125,7 +133,7 @@ fun FocusSettingsSection(
     }
 }
 
-private fun Context.openSafely(intent: Intent) {
+internal fun Context.openSafely(intent: Intent) {
     try {
         startActivity(intent)
     } catch (_: ActivityNotFoundException) {
@@ -145,30 +153,20 @@ fun FocusSettingsContent(
     onOpenPromotionSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(stringResource(R.string.settings_focus), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-        Text(stringResource(R.string.focus_default_length), style = MaterialTheme.typography.bodyLarge)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    GlassCard(modifier) {
+        Text(stringResource(R.string.focus_default_length), style = KairoTheme.type.bodyLarge)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             FocusDurations.CHIPS.forEach { option ->
-                FilterChip(
-                    selected = settings.defaultMinutes == option,
-                    onClick = { onDefaultMinutes(option) },
-                    label = { Text(stringResource(R.string.focus_minutes, option)) },
-                )
+                ChoicePill(stringResource(R.string.focus_minutes, option), settings.defaultMinutes == option, { onDefaultMinutes(option) })
             }
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.focus_dnd_toggle), style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    stringResource(if (settings.silenceDuringFocus && !dndAccess) R.string.focus_dnd_access_lost else R.string.focus_dnd_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            Switch(checked = settings.silenceDuringFocus && dndAccess, onCheckedChange = onSilenceChange)
-        }
+        ToggleRow(
+            stringResource(R.string.focus_dnd_toggle),
+            settings.silenceDuringFocus && dndAccess,
+            onSilenceChange,
+            subtitle = stringResource(if (settings.silenceDuringFocus && !dndAccess) R.string.focus_dnd_access_lost else R.string.focus_dnd_note),
+            icon = Icons.Outlined.DoNotDisturbOn,
+        )
         PromotionHint(promotion, onOpenPromotionSettings)
     }
 }
@@ -176,25 +174,20 @@ fun FocusSettingsContent(
 /** Live Updates are a user-controllable permission on Android 16+; older phones get the normal countdown. */
 @Composable
 private fun PromotionHint(promotion: PromotionStatus, onOpen: () -> Unit) {
-    val text = when (promotion) {
+    when (promotion) {
         PromotionStatus.ALLOWED -> return
-        PromotionStatus.BLOCKED -> R.string.focus_promotion_blocked
-        PromotionStatus.NOT_SUPPORTED -> R.string.focus_promotion_unsupported
-    }
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(text), style = MaterialTheme.typography.bodyMedium)
-            if (promotion == PromotionStatus.BLOCKED) {
-                OutlinedButton(onClick = onOpen) { Text(stringResource(R.string.focus_promotion_open)) }
-            }
-        }
+        PromotionStatus.BLOCKED -> Banner(
+            BannerTone.INFO,
+            stringResource(R.string.focus_promotion_blocked_title),
+            body = stringResource(R.string.focus_promotion_blocked),
+            actionLabel = stringResource(R.string.focus_promotion_open),
+            onAction = onOpen,
+        )
+        PromotionStatus.NOT_SUPPORTED -> Text(stringResource(R.string.focus_promotion_unsupported), style = KairoTheme.type.bodySmall, color = KairoTheme.colors.textTertiary)
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF07070B)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F)
 @Composable
 private fun FocusSettingsContentPreview() {
     KairoTheme {

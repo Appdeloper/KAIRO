@@ -101,7 +101,7 @@ fun KairoRoot(
     val prefs by profileViewModel.prefs.collectAsStateWithLifecycle()
     when {
         prefs == null -> Box(Modifier.fillMaxSize()) // DataStore not read yet; avoids an onboarding flash.
-        prefs?.onboardingDone == false -> OnboardingScreen(profileViewModel)
+        prefs?.onboardingDone == false -> OnboardingScreen()
         else -> MainShell()
     }
 }

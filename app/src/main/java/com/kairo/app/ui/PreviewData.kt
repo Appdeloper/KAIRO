@@ -76,5 +76,24 @@ object PreviewData {
         ),
     )
 
+    /** One of every change kind, for the change-preview screenshots. */
+    val sampleDiffFull = PlanDiff(
+        listOf(
+            Change.Added(
+                Task(title = "Gym", roleId = 1, durationMinutes = 60, status = TaskStatus.SCHEDULED,
+                    scheduledEpochDay = today.toEpochDay(), scheduledStartMinute = 13 * 60 + 10, createdAt = 0),
+            ),
+            Change.Moved(
+                todayTasks[1],
+                todayTasks[1].copy(scheduledStartMinute = 18 * 60),
+            ),
+            Change.Removed(
+                com.kairo.app.domain.plan.RemovedItem.BlockSkipped(blocks[1], today),
+            ),
+            Change.Conflict(Reason.FixedBlockImmovable("DBMS lecture")),
+            Change.Warning(Reason.OverBudget("College", 420, 360)),
+        ),
+    )
+
     val sampleAgenda = PlanDiff(agenda = Agenda(today, todayState.entries, nextOnly = false))
 }

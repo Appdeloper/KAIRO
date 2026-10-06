@@ -7,25 +7,16 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -33,15 +24,26 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.kairo.app.R
 import com.kairo.app.data.local.Role
 import com.kairo.app.ui.PreviewData
-import com.kairo.app.ui.components.RolePicker
 import com.kairo.app.ui.design.KairoTheme
+import com.kairo.app.ui.design.Spacing
+import com.kairo.app.ui.design.components.ChoicePill
+import com.kairo.app.ui.design.components.KairoBottomSheet
+import com.kairo.app.ui.design.components.KairoTextButton
+import com.kairo.app.ui.design.components.KairoTextField
+import com.kairo.app.ui.design.components.LanePicker
+import com.kairo.app.ui.design.components.PrimaryButton
+import com.kairo.app.ui.design.components.SectionHeader
+import com.kairo.app.ui.design.components.SecondaryButton
+import com.kairo.app.ui.design.components.SegmentedControl
+import com.kairo.app.ui.design.components.SheetFrame
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -49,19 +51,18 @@ import java.time.format.FormatStyle
 private val DurationOptions = listOf(15, 30, 45, 60, 90, 120)
 private const val MILLIS_PER_DAY = 86_400_000L
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTaskSheet(roles: List<Role>, onDismiss: () -> Unit, onSave: (NewTaskInput) -> Unit) {
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-        AddTaskForm(roles, onSave)
+fun AddTaskSheet(roles: List<Role>, onDismiss: () -> Unit, onSave: (NewTaskInput) -> Unit, hiddenRoleIds: Set<Long> = emptySet()) {
+    KairoBottomSheet(onDismissRequest = onDismiss) {
+        AddTaskForm(roles, hiddenRoleIds, onSave)
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-private fun AddTaskForm(roles: List<Role>, onSave: (NewTaskInput) -> Unit) {
+private fun AddTaskForm(roles: List<Role>, hiddenRoleIds: Set<Long>, onSave: (NewTaskInput) -> Unit) {
     var title by rememberSaveable { mutableStateOf("") }
-    var roleId by rememberSaveable { mutableStateOf(roles.firstOrNull()?.id) }
+    var roleId by rememberSaveable { mutableStateOf(roles.firstOrNull { it.id !in hiddenRoleIds }?.id ?: roles.firstOrNull()?.id) }
     var duration by rememberSaveable { mutableIntStateOf(30) }
     var priority by rememberSaveable { mutableIntStateOf(3) }
     var deadline by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -72,72 +73,54 @@ private fun AddTaskForm(roles: List<Role>, onSave: (NewTaskInput) -> Unit) {
         Modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+            .padding(horizontal = Spacing.screen)
+            .padding(bottom = Spacing.xl),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
-        Text(stringResource(R.string.tasks_add), style = MaterialTheme.typography.titleLarge)
-        OutlinedTextField(
+        Text(stringResource(R.string.tasks_add), style = KairoTheme.type.headlineSmall)
+        KairoTextField(
             value = title,
             onValueChange = { title = it },
-            label = { Text(stringResource(R.string.task_title_label)) },
-            isError = showErrors && title.isBlank(),
-            supportingText = if (showErrors && title.isBlank()) {
-                { Text(stringResource(R.string.task_error_title)) }
-            } else {
-                null
+            label = stringResource(R.string.task_title_label),
+            error = if (showErrors && title.isBlank()) stringResource(R.string.task_error_title) else null,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+        )
+        SectionHeader(stringResource(R.string.block_lane_label))
+        LanePicker(roles = roles, selectedId = roleId, onSelect = { roleId = it }, hiddenIds = hiddenRoleIds)
+
+        SectionHeader(stringResource(R.string.task_duration_label))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            DurationOptions.forEach { minutes ->
+                ChoicePill(stringResource(R.string.task_duration_minutes, minutes), duration == minutes, { duration = minutes })
+            }
+        }
+
+        SectionHeader(stringResource(R.string.task_priority_label))
+        SegmentedControl(
+            options = (1..4).map { stringResource(R.string.task_priority_short, it) },
+            selectedIndex = priority - 1,
+            onSelect = { priority = it + 1 },
+        )
+        Text(stringResource(R.string.task_priority_help), style = KairoTheme.type.bodySmall, color = KairoTheme.colors.textTertiary)
+
+        SectionHeader(stringResource(R.string.task_deadline_label))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SecondaryButton(
+                deadline?.let { LocalDate.ofEpochDay(it).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)) }
+                    ?: stringResource(R.string.task_deadline_none),
+                onClick = { pickingDate = true },
+            )
+            if (deadline != null) KairoTextButton(stringResource(R.string.task_deadline_clear), { deadline = null })
+        }
+        Spacer(Modifier.height(Spacing.xs))
+        PrimaryButton(
+            stringResource(R.string.tasks_add),
+            onClick = {
+                val role = roleId
+                if (title.isBlank() || role == null) showErrors = true else onSave(NewTaskInput(title, role, duration, priority, deadline))
             },
-            singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
-        RolePicker(roles = roles, selectedId = roleId, onSelect = { roleId = it })
-
-        Text(stringResource(R.string.task_duration_label), style = MaterialTheme.typography.labelLarge)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DurationOptions.forEach { minutes ->
-                FilterChip(
-                    selected = duration == minutes,
-                    onClick = { duration = minutes },
-                    label = { Text(stringResource(R.string.task_duration_minutes, minutes)) },
-                )
-            }
-        }
-
-        Text(stringResource(R.string.task_priority_label), style = MaterialTheme.typography.labelLarge)
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            (1..4).forEach { p ->
-                SegmentedButton(
-                    selected = priority == p,
-                    onClick = { priority = p },
-                    shape = SegmentedButtonDefaults.itemShape(index = p - 1, count = 4),
-                ) { Text(stringResource(R.string.task_priority_short, p)) }
-            }
-        }
-
-        Text(stringResource(R.string.task_deadline_label), style = MaterialTheme.typography.labelLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { pickingDate = true }) {
-                Text(
-                    deadline?.let { LocalDate.ofEpochDay(it).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)) }
-                        ?: stringResource(R.string.task_deadline_none),
-                )
-            }
-            if (deadline != null) {
-                TextButton(onClick = { deadline = null }) { Text(stringResource(R.string.task_deadline_clear)) }
-            }
-        }
-
-        Row(Modifier.fillMaxWidth()) {
-            Spacer(Modifier.weight(1f))
-            Button(onClick = {
-                val role = roleId
-                if (title.isBlank() || role == null) {
-                    showErrors = true
-                } else {
-                    onSave(NewTaskInput(title, role, duration, priority, deadline))
-                }
-            }) { Text(stringResource(R.string.action_save)) }
-        }
-        Spacer(Modifier.padding(bottom = 16.dp))
     }
 
     if (pickingDate) {
@@ -146,18 +129,18 @@ private fun AddTaskForm(roles: List<Role>, onSave: (NewTaskInput) -> Unit) {
         DatePickerDialog(
             onDismissRequest = { pickingDate = false },
             confirmButton = {
-                TextButton(onClick = {
+                KairoTextButton(stringResource(R.string.action_ok), {
                     pickerState.selectedDateMillis?.let { deadline = it / MILLIS_PER_DAY }
                     pickingDate = false
-                }) { Text(stringResource(R.string.action_ok)) }
+                })
             },
-            dismissButton = { TextButton(onClick = { pickingDate = false }) { Text(stringResource(R.string.action_cancel)) } },
+            dismissButton = { KairoTextButton(stringResource(R.string.action_cancel), { pickingDate = false }, color = KairoTheme.colors.textSecondary) },
         ) { DatePicker(state = pickerState) }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0F0F16)
+@Preview(showBackground = true, backgroundColor = 0xFF05070F, heightDp = 860)
 @Composable
 private fun AddTaskFormPreview() {
-    KairoTheme { AddTaskForm(roles = PreviewData.roles, onSave = {}) }
+    KairoTheme { SheetFrame { AddTaskForm(roles = PreviewData.roles, hiddenRoleIds = emptySet(), onSave = {}) } }
 }

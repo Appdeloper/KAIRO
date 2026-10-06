@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -49,6 +50,10 @@ data class TodayUiState(
     val date: LocalDate = LocalDate.now(),
     val entries: List<TimelineEntry> = emptyList(),
     val progress: DayProgress = DayProgress(0, 0),
+    /** Minute of the day the screen was last refreshed at; drives the Now card and the now-line. */
+    val nowMinute: Int = 0,
+    /** False until the first database read, so the screen shows a loading orb instead of "0 / 0". */
+    val loaded: Boolean = false,
 )
 
 class TodayViewModel(
@@ -61,19 +66,32 @@ class TodayViewModel(
     private val executor: CommandExecutor,
     private val parser: CommandParserFacade,
     alarmRepository: AlarmRepository,
+    private val loadSampleWeek: suspend () -> Boolean = { false },
 ) : ViewModel() {
 
     private val timeline = DayTimelineSource(taskRepository, timetableRepository, roleRepository, dateProvider)
 
-    val state: StateFlow<TodayUiState> = combine(timeline.today(), prefsRepository.prefs) { day, prefs ->
+    val state: StateFlow<TodayUiState> = combine(timeline.today(), prefsRepository.prefs, minuteTicker) { day, prefs, _ ->
+        val now = dateProvider.nowMinuteOfDay()
         TodayUiState(
             firstName = prefs.firstName,
-            dayPart = Greeting.dayPartFor(dateProvider.nowMinuteOfDay()),
+            dayPart = Greeting.dayPartFor(now),
             date = day.date,
             entries = day.entries,
             progress = DayProgress.of(day.tasks),
+            nowMinute = now,
+            loaded = true,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TodayUiState())
+
+    private val _sampleMessages = kotlinx.coroutines.channels.Channel<Boolean>(kotlinx.coroutines.channels.Channel.BUFFERED)
+
+    /** true = sample week loaded, false = it was already there. */
+    val sampleMessages: Flow<Boolean> = _sampleMessages.receiveAsFlow()
+
+    fun loadSample() {
+        viewModelScope.launch { _sampleMessages.send(loadSampleWeek()) }
+    }
 
     /** Soonest alarm (refreshed each minute) and whether any alarm is on, for the chip and banner. */
     val alarms: StateFlow<TodayAlarms> = combine(alarmRepository.plans(), minuteTicker) { plans, _ ->
