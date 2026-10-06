@@ -3,6 +3,7 @@ package com.kairo.app
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.kairo.app.service.shake.ShakeControl
 import kotlinx.coroutines.launch
@@ -19,6 +20,9 @@ import com.kairo.app.ui.design.KairoTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Must run before super.onCreate (developer.android.com/develop/ui/views/launch/splash-screen/migrate);
+        // it swaps the Starting theme for Theme.Kairo, so it also goes before anything that reads the theme.
+        installSplashScreen()
         // Edge-to-edge is enforced for targetSdk 35+; opting in explicitly keeps behavior identical on API 26–34.
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)

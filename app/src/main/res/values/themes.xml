@@ -12,4 +12,11 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:backgroundDimEnabled">false</item>
     </style>
+
+    <!-- Launch theme for MainActivity: the androidx splash (orb on #05070F) on every API level, then Theme.Kairo. -->
+    <style name="Theme.Kairo.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/kairo_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Kairo</item>
+    </style>
 </resources>
